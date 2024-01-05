@@ -8,7 +8,7 @@
   "license": "MIT",
   "commands": [
     {
-      "name": "github-shorthand",
+      "name": "gh-shorthand",
       "title": "GitHub Shorthand",
       "description": "Search or open GitHub repositories",
       "mode": "view"
@@ -23,10 +23,12 @@
   ],
   "dependencies": {
     "@raycast/api": "^1.64.4",
+    "js-yaml": "^4.1.0",
     "open": "^8.4.2"
   },
   "devDependencies": {
     "@raycast/eslint-config": "^1.0.6",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "20.8.10",
     "@types/react": "18.2.27",
     "eslint": "^8.51.0",
