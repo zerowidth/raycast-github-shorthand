@@ -1,17 +1,17 @@
-import { List } from "@raycast/api";
 import { useEffect, useState } from "react";
 import fs from "fs";
 import yaml from "js-yaml";
 import { configPath } from "./utils";
-import { showToast, Toast } from "@raycast/api";
+import { List, showToast, Toast, useNavigation } from "@raycast/api";
 
 type Config = {
-  users?: { [shorthand: string]: string };
-  repos?: { [shorthand: string]: string };
+  users: { [shorthand: string]: string };
+  repos: { [shorthand: string]: string };
 };
 
 export default function Main() {
   const [config, setConfig] = useState<Config>({ users: {}, repos: {} });
+  const { push } = useNavigation();
 
   useEffect(() => {
     fs.readFile(configPath, "utf-8", (err, data) => {
@@ -39,14 +39,20 @@ export default function Main() {
 
   return (
     <List>
-      {config.users &&
-        Object.entries(config.users).map(([shorthand, full]) => (
-          <List.Item key={shorthand} title={`${shorthand}/`} subtitle={full} />
-        ))}
-      {config.repos &&
-        Object.entries(config.repos).map(([shorthand, full]) => (
-          <List.Item key={shorthand} title={shorthand} subtitle={full} />
-        ))}
+      {config.users && (
+        <List.Section title="Users">
+          {Object.entries(config.users).map(([shorthand, full]) => (
+            <List.Item key={shorthand} title={`${shorthand}/`} subtitle={full} />
+          ))}
+        </List.Section>
+      )}
+      {config.repos && (
+        <List.Section title="Repositories">
+          {Object.entries(config.repos).map(([shorthand, full]) => (
+            <List.Item key={shorthand} title={shorthand} subtitle={full} />
+          ))}
+        </List.Section>
+      )}
     </List>
   );
 }
