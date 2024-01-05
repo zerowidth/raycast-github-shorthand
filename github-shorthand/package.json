@@ -1,0 +1,42 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "github-shorthand",
+  "title": "GitHub Shorthand",
+  "description": "Access and search a configured set of repositories quickly.",
+  "icon": "command-icon.png",
+  "author": "zerowidth",
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "github-shorthand",
+      "title": "GitHub Shorthand",
+      "description": "Search or open GitHub repositories",
+      "mode": "view"
+    },
+    {
+      "name": "configure-github-shorthand",
+      "title": "Configure GitHub Shorthand",
+      "subtitle": "Open the GitHub Shorthand configuration file",
+      "description": "",
+      "mode": "view"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.64.5"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^1.0.6",
+    "@types/node": "20.8.10",
+    "@types/react": "18.2.27",
+    "eslint": "^8.51.0",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
+  },
+  "scripts": {
+    "build": "ray build -e dist",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "publish": "npx @raycast/api@latest publish"
+  }
+}
