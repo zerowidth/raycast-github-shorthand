@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import fs from "fs";
 import yaml from "js-yaml";
 import { configPath } from "./utils";
+import { showToast, Toast } from "@raycast/api";
 
 type Config = {
   users?: { [shorthand: string]: string };
@@ -15,9 +16,19 @@ export default function Main() {
   useEffect(() => {
     fs.readFile(configPath, "utf-8", (err, data) => {
       if (err) {
-        console.error("Failed to load config:", err);
+        showToast({
+          style: Toast.Style.Failure,
+          title: "Failed to load config: " + err.message,
+        });
       } else {
-        setConfig(yaml.load(data) as Config);
+        try {
+          setConfig(yaml.load(data) as Config);
+        } catch (err) {
+          showToast({
+            style: Toast.Style.Failure,
+            title: "Failed to load config: " + (err as Error).message,
+          });
+        }
       }
     });
   }, []);
@@ -28,12 +39,14 @@ export default function Main() {
 
   return (
     <List>
-      {config.users && Object.entries(config.users).map(([shorthand, full]) => (
-        <List.Item key={shorthand} title={`${shorthand} -> ${full}`} />
-      ))}
-      {config.repos && Object.entries(config.repos).map(([shorthand, full]) => (
-        <List.Item key={shorthand} title={`${shorthand} -> ${full}`} />
-      ))}
+      {config.users &&
+        Object.entries(config.users).map(([shorthand, full]) => (
+          <List.Item key={shorthand} title={`${shorthand}/`} subtitle={full} />
+        ))}
+      {config.repos &&
+        Object.entries(config.repos).map(([shorthand, full]) => (
+          <List.Item key={shorthand} title={shorthand} subtitle={full} />
+        ))}
     </List>
   );
 }
