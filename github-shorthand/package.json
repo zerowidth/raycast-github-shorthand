@@ -2,7 +2,7 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "github-shorthand",
   "title": "GitHub Shorthand",
-  "description": "Access and search a configured set of repositories quickly.",
+  "description": "Quick access and search for a configured set of repositories using shorthand references for users and repositories.",
   "icon": "command-icon.png",
   "author": "zerowidth",
   "license": "MIT",
@@ -14,15 +14,16 @@
       "mode": "view"
     },
     {
-      "name": "configure-github-shorthand",
+      "name": "configure",
       "title": "Configure GitHub Shorthand",
       "subtitle": "Open the GitHub Shorthand configuration file",
-      "description": "",
-      "mode": "view"
+      "description": "Open the configuration YAML file in VSCode",
+      "mode": "no-view"
     }
   ],
   "dependencies": {
-    "@raycast/api": "^1.64.5"
+    "@raycast/api": "^1.64.4",
+    "open": "^8.4.2"
   },
   "devDependencies": {
     "@raycast/eslint-config": "^1.0.6",
