@@ -9,7 +9,7 @@ export default function Main() {
   return <CombinedList config={config} />;
 }
 
-function CombinedList({config}: {config: Config}) {
+function CombinedList({ config }: { config: Config }) {
   const [searchText, setSearchText] = useState("");
   const exactMatch = Object.entries(config.users).some(([shorthand]) => shorthand == searchText);
   return (
@@ -19,51 +19,47 @@ function CombinedList({config}: {config: Config}) {
       filtering={true}
       searchBarPlaceholder="Shorthand or user..."
     >
-      <List.Section title="Users">
-        {!exactMatch && searchText.length > 0 && !searchText.includes("/") && (
-          <List.Item
-            key={`search-${searchText}`}
-            title={`${searchText}`}
-            subtitle={searchText + "/..."}
-            icon={{ source: "person.png", tintColor: Color.PrimaryText }}
-            actions={
-              <ActionPanel>
-                <Action.Push title="Search Repositories" target={<RepoList owner={searchText} repos={config.repos} />} />
-              </ActionPanel>
-            }
-          />
-        )}
-        {Object.entries(config.users).map(([shorthand, full]) => (
-          <List.Item
-            key={shorthand}
-            title={`${shorthand}/`}
-            subtitle={full + "/..."}
-            keywords={[full]}
-            icon={{ source: "person.png", tintColor: Color.PrimaryText }}
-            actions={
-              <ActionPanel>
-                <Action.Push title="Search Repositories" target={<RepoList owner={full} repos={config.repos} />} />
-              </ActionPanel>
-            }
-          />
-        ))}
-      </List.Section>
-      <List.Section title="Repositories">
-        {Object.entries(config.repos).map(([shorthand, full]) => (
-          <List.Item
-            key={shorthand}
-            title={shorthand}
-            subtitle={full}
-            keywords={full.split("/")}
-            icon={{ source: "repo.png", tintColor: Color.PrimaryText }}
-            actions={
-              <ActionPanel>
-                <Action.Push title="Search Issues" target={<IssueSearch scope={`repo:${full}`} />} />
-              </ActionPanel>
-            }
-          />
-        ))}
-      </List.Section>
+      {!exactMatch && searchText.length > 0 && !searchText.includes("/") && (
+        <List.Item
+          key={`search-${searchText}`}
+          title={`${searchText}`}
+          subtitle={searchText + "/..."}
+          icon={{ source: "person.png", tintColor: Color.PrimaryText }}
+          actions={
+            <ActionPanel>
+              <Action.Push title="Search Repositories" target={<RepoList owner={searchText} repos={config.repos} />} />
+            </ActionPanel>
+          }
+        />
+      )}
+      {Object.entries(config.users).map(([shorthand, full]) => (
+        <List.Item
+          key={shorthand}
+          title={`${shorthand}/`}
+          subtitle={full + "/..."}
+          keywords={[full]}
+          icon={{ source: "person.png", tintColor: Color.PrimaryText }}
+          actions={
+            <ActionPanel>
+              <Action.Push title="Search Repositories" target={<RepoList owner={full} repos={config.repos} />} />
+            </ActionPanel>
+          }
+        />
+      ))}
+      {Object.entries(config.repos).map(([shorthand, full]) => (
+        <List.Item
+          key={shorthand}
+          title={shorthand}
+          subtitle={full}
+          keywords={full.split("/")}
+          icon={{ source: "repo.png", tintColor: Color.PrimaryText }}
+          actions={
+            <ActionPanel>
+              <Action.Push title="Search Issues" target={<IssueSearch scope={`repo:${full}`} />} />
+            </ActionPanel>
+          }
+        />
+      ))}
     </List>
   );
 }
