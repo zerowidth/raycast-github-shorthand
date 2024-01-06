@@ -24,6 +24,9 @@ function CombinedList() {
       filtering={true}
       searchBarPlaceholder="Shorthand or user..."
     >
+      {Object.entries(config.multi).map(([shorthand, { name, repos  }]) => (
+        <Multi key={`multi-${shorthand}`} shorthand={shorthand} name={name} repos={repos} />
+      ))}
       {Object.entries(config.repos).map(([shorthand, full]) => (
         <Repo key={`repo-${shorthand}`} repo={full} shorthand={shorthand} />
       ))}
@@ -261,6 +264,30 @@ function Repo({ repo, shorthand }: { repo: string; shorthand?: string }) {
             shortcut={Keyboard.Shortcut.Common.New}
           />
           <Action.CopyToClipboard title="Copy URL" content={url} shortcut={Keyboard.Shortcut.Common.Copy} />
+        </ActionPanel>
+      }
+    />
+  );
+}
+
+function Multi({shorthand, name, repos} : {shorthand: string, name: string, repos: string[]}) {
+  return (
+    <List.Item
+      title={shorthand}
+      subtitle={name}
+      keywords={[name]}
+      icon={{ source: "repo-clone.png", tintColor: Color.PrimaryText }}
+      actions={
+        <ActionPanel>
+          <Action.Push
+            title="Search Issues"
+            icon={Icon.MagnifyingGlass}
+            target={
+              <ConfigContext.Provider value={useContext(ConfigContext)}>
+                <IssueSearch scope={`repo:${repos.join(" repo:")}`} description={`in ${name}`} />
+              </ConfigContext.Provider>
+            }
+          />
         </ActionPanel>
       }
     />

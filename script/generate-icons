@@ -18,6 +18,7 @@ const toConvert = [
   "issue-closed",
   "issue-draft",
   "skip",
+  "repo-clone",
 ];
 
 convertSVGs()

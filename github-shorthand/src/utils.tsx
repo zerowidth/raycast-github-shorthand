@@ -9,8 +9,8 @@ import { createContext } from "react";
 
 const defaultConfigFile = `---
 # Configuration file for GitHub Shorthand
-#
-# Default search scope for issues.
+
+# Default search scope for issues/prs
 defaultScope: "is:open"
 
 # This is a map of user shorthand to their full GitHub login:
@@ -26,6 +26,18 @@ orgs:
 repos:
   # "rs": "raycast/script-commands"
   # "df": "zerowidth/dotfiles"
+
+# For multi-repo search, you can configure sets of repos here.
+#
+# The key is the shorthand for the group and the value is a descriptive name and
+# a list of repos to search.
+# multi:
+#  team:
+#    name: "my team's repos"
+#    repos:
+#      - my-org/team-repo
+#      - my-org/team-project-1
+#      - my-org/team-project-2
 `;
 
 export const configPath = path.join(environment.supportPath, "gh-shorthand.yaml");
@@ -35,6 +47,7 @@ export type Config = {
   users: Shorthand;
   orgs: Shorthand;
   repos: Shorthand;
+  multi: { [name: string]: { name: string; repos: string[] } };
   usersAndOrgs: Shorthand;
 };
 
@@ -43,6 +56,7 @@ export const defaultConfig = {
   users: {},
   orgs: {},
   repos: {},
+  multi: {},
   get usersAndOrgs() {
     return { ...this.users, ...this.orgs };
   },
@@ -67,7 +81,7 @@ export function loadConfig(): Config {
       const config: Config = {
         ...defaultConfig,
         ...loaded,
-      }
+      };
       return config;
     } catch (err) {
       showToast({
