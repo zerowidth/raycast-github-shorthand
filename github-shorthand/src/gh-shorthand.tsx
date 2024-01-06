@@ -1,16 +1,21 @@
-import { useEffect, useState } from "react";
-import { Config, loadConfig, getGraphqlWithAuth } from "./utils";
+import { createContext, useContext, useEffect, useState } from "react";
+import { Config, defaultConfig, loadConfig, getGraphqlWithAuth } from "./utils";
 import { Image, Icon, Color, ActionPanel, Action, List, Keyboard } from "@raycast/api";
 
 const ISSUE_COUNT = 50;
+const ConfigContext = createContext<Config>(defaultConfig);
 
 export default function Main() {
-  const config = loadConfig();
-  return <CombinedList config={config} />;
+  return (
+    <ConfigContext.Provider value={loadConfig()}>
+      <CombinedList />
+    </ConfigContext.Provider>
+  );
 }
 
 // CombinedList shows the configured shorthand users and repos along with the user-entered user prefix, if applicable
-function CombinedList({ config }: { config: Config }) {
+function CombinedList() {
+  const config = useContext(ConfigContext);
   const [searchText, setSearchText] = useState("");
   const exactMatch = Object.entries(config.users).some(([shorthand]) => shorthand == searchText);
   return (
@@ -21,20 +26,21 @@ function CombinedList({ config }: { config: Config }) {
       searchBarPlaceholder="Shorthand or user..."
     >
       {!exactMatch && searchText.length > 0 && !searchText.includes("/") && !searchText.includes(" ") && (
-        <User key={`search-${searchText}`} config={config} user={searchText} />
+        <User key={`search-${searchText}`} user={searchText} />
       )}
       {Object.entries(config.users).map(([shorthand, full]) => (
-        <User key={`user-${shorthand}`} config={config} user={full} shorthand={shorthand} />
+        <User key={`user-${shorthand}`} user={full} shorthand={shorthand} />
       ))}
       {Object.entries(config.repos).map(([shorthand, full]) => (
-        <Repo key={`repo-${shorthand}`} config={config} repo={full} shorthand={shorthand} />
+        <Repo key={`repo-${shorthand}`} repo={full} shorthand={shorthand} />
       ))}
     </List>
   );
 }
 
 // RepoList shows the repos for a given owner along with a user-entered repo, if applicable
-function RepoList({ config, owner }: { config: Config; owner: string }) {
+function RepoList({ owner }: { owner: string }) {
+  const config = useContext(ConfigContext);
   const [searchText, setSearchText] = useState("");
   const filtered = Object.entries(config.repos).filter(([, full]) => {
     return full.split("/")[0] == owner;
@@ -48,10 +54,10 @@ function RepoList({ config, owner }: { config: Config; owner: string }) {
       searchBarPlaceholder={`Search repos in ${owner}/...`}
     >
       {searchText.length > 0 && !exactMatch && (
-        <Repo key={`repo-search-${searchText}`} config={config} repo={`${owner}/${searchText}`} />
+        <Repo key={`repo-search-${searchText}`} repo={`${owner}/${searchText}`} />
       )}
       {filtered.map(([shorthand, full]) => (
-        <Repo key={`repo-${shorthand}`} config={config} repo={full} shorthand={shorthand} />
+        <Repo key={`repo-${shorthand}`} repo={full} shorthand={shorthand} />
       ))}
     </List>
   );
@@ -101,8 +107,9 @@ function iconForIssue(issue: IssueOrPr): Image {
   }
 }
 
-function IssueSearch({ config, scope }: { config: Config; scope: string }) {
+function IssueSearch({ scope }: { scope: string }) {
   const graphqlWithAuth = getGraphqlWithAuth();
+  const config = useContext(ConfigContext);
   const [searchText, setSearchText] = useState(config.defaultScope.length > 0 ? `${config.defaultScope} ` : "");
   const [issues, setIssues] = useState([] as IssueOrPr[]);
   const [isLoading, setIsLoading] = useState(false);
@@ -173,7 +180,7 @@ function IssueSearch({ config, scope }: { config: Config; scope: string }) {
   );
 }
 
-function User({ config, user, shorthand }: { config: Config; user: string; shorthand?: string }) {
+function User({ user, shorthand }: { user: string; shorthand?: string }) {
   return (
     <List.Item
       title={shorthand ? `${shorthand}/` : user}
@@ -181,14 +188,21 @@ function User({ config, user, shorthand }: { config: Config; user: string; short
       icon={{ source: "person.png", tintColor: Color.PrimaryText }}
       actions={
         <ActionPanel>
-          <Action.Push title="Search Repositories" target={<RepoList owner={user} config={config} />} />
+          <Action.Push
+            title="Search Repositories"
+            target={
+              <ConfigContext.Provider value={useContext(ConfigContext)}>
+                <RepoList owner={user} />
+              </ConfigContext.Provider>
+            }
+          />
         </ActionPanel>
       }
     />
   );
 }
 
-function Repo({ config, repo, shorthand }: { config: Config; repo: string; shorthand?: string }) {
+function Repo({ repo, shorthand }: { repo: string; shorthand?: string }) {
   const url = `https://github.com/${repo}`;
   return (
     <List.Item
@@ -201,7 +215,11 @@ function Repo({ config, repo, shorthand }: { config: Config; repo: string; short
           <Action.Push
             title="Search Issues"
             icon={Icon.MagnifyingGlass}
-            target={<IssueSearch config={config} scope={`repo:${repo}`} />}
+            target={
+              <ConfigContext.Provider value={useContext(ConfigContext)}>
+                <IssueSearch scope={`repo:${repo}`} />
+              </ConfigContext.Provider>
+            }
           />
           <Action.OpenInBrowser
             title="Open Repo on GitHub"

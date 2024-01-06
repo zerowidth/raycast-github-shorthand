@@ -6,7 +6,7 @@ import fetch from "node-fetch";
 import { showToast, Toast } from "@raycast/api";
 import yaml from "js-yaml";
 
-const defaultConfig = `---
+const defaultConfigFile = `---
 # Configuration file for GitHub Shorthand
 #
 # Default search scope for issues.
@@ -29,6 +29,11 @@ export type Config = {
   users: Shorthand;
   repos: Shorthand;
 };
+export const defaultConfig = {
+  defaultScope: "",
+  users: {},
+  repos: {},
+} as Config;
 
 export type Shorthand = { [shorthand: string]: string };
 
@@ -58,13 +63,13 @@ export function loadConfig(): Config {
     }
   }
 
-  return { users: {}, repos: {}, defaultScope: "" };
+  return defaultConfig;
 }
 
 export function initializeConfigFile(): void {
   fs.mkdirSync(environment.supportPath, { recursive: true });
   if (!fs.existsSync(configPath)) {
-    fs.writeFileSync(configPath, defaultConfig);
+    fs.writeFileSync(configPath, defaultConfigFile);
   }
 }
 
