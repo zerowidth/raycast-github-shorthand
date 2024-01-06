@@ -16,7 +16,7 @@ export default function Main() {
 function CombinedList() {
   const config = useContext(ConfigContext);
   const [searchText, setSearchText] = useState("");
-  const exactMatch = Object.entries(config.users).some(([shorthand]) => shorthand == searchText);
+  const exactMatch = Object.entries(config.usersAndOrgs).some(([shorthand]) => shorthand == searchText);
   return (
     <List
       searchText={searchText}
@@ -29,6 +29,9 @@ function CombinedList() {
       )}
       {Object.entries(config.users).map(([shorthand, full]) => (
         <User key={`user-${shorthand}`} user={full} shorthand={shorthand} />
+      ))}
+      {Object.entries(config.orgs).map(([shorthand, full]) => (
+        <User key={`org-${shorthand}`} user={full} shorthand={shorthand} org />
       ))}
       {Object.entries(config.repos).map(([shorthand, full]) => (
         <Repo key={`repo-${shorthand}`} repo={full} shorthand={shorthand} />
@@ -179,12 +182,12 @@ function IssueSearch({ scope }: { scope: string }) {
   );
 }
 
-function User({ user, shorthand }: { user: string; shorthand?: string }) {
+function User({ user, shorthand, org }: { user: string; shorthand?: string, org?: boolean }) {
   return (
     <List.Item
       title={shorthand ? `${shorthand}/` : user}
       subtitle={`${user}/...`}
-      icon={{ source: "person.png", tintColor: Color.PrimaryText }}
+      icon={{ source: org ? "organization.png" : "person.png", tintColor: Color.PrimaryText }}
       actions={
         <ActionPanel>
           <Action.Push

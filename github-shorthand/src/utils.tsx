@@ -17,6 +17,11 @@ default_scope: "is:open"
 users:
   # "z": "zerowidth"
 
+# Same thing for organizations. There's no functional difference from users, this just
+# changes the icon shown in the list.
+orgs:
+  # "r": "rails"
+
 # This is map of repository shorthands to their full path on GitHub:
 repos:
   # "rs": "raycast/script-commands"
@@ -28,12 +33,19 @@ export const configPath = path.join(environment.supportPath, "gh-shorthand.yaml"
 export type Config = {
   defaultScope: string;
   users: Shorthand;
+  orgs: Shorthand;
   repos: Shorthand;
+  usersAndOrgs: Shorthand;
 };
+
 export const defaultConfig = {
   defaultScope: "",
   users: {},
+  orgs: {},
   repos: {},
+  get usersAndOrgs() {
+    return { ...this.users, ...this.orgs };
+  },
 } as Config;
 
 export type Shorthand = { [shorthand: string]: string };
