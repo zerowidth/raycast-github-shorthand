@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Config, loadConfig, getGraphqlWithAuth } from "./utils";
-import { Image, Icon, Color, ActionPanel, Action, List } from "@raycast/api";
+import { Image, Icon, Color, ActionPanel, Action, List, Keyboard } from "@raycast/api";
 
 const ISSUE_COUNT = 50;
 
@@ -178,6 +178,7 @@ function User({ config, user, shorthand }: { config: Config; user: string; short
 }
 
 function Repo({ repo, shorthand }: { repo: string; shorthand?: string }) {
+  const url = `https://github.com/${repo}`;
   return (
     <List.Item
       title={shorthand ? shorthand : repo}
@@ -186,7 +187,29 @@ function Repo({ repo, shorthand }: { repo: string; shorthand?: string }) {
       keywords={repo.split("/")}
       actions={
         <ActionPanel>
-          <Action.Push title="Search Issues" target={<IssueSearch scope={`repo:${repo}`} />} />
+          <Action.Push
+            title="Search Issues"
+            icon={Icon.MagnifyingGlass}
+            target={<IssueSearch scope={`repo:${repo}`} />}
+          />
+          <Action.OpenInBrowser
+            title="Open Repo on GitHub"
+            url={url}
+            icon={{ source: "repo.png", tintColor: Color.PrimaryText }}
+          />
+          <Action.OpenInBrowser
+            title="Open Issues on GitHub"
+            url={`${url}/issues`}
+            icon={{ source: "issue-opened.png", tintColor: Color.PrimaryText }}
+            shortcut={{ modifiers: ["cmd"], key: "i" }}
+          />
+          <Action.OpenInBrowser
+            title="Open PRs on GitHub"
+            url={`${url}/pulls`}
+            icon={{ source: "git-pull-request.png", tintColor: Color.PrimaryText }}
+            shortcut={{ modifiers: ["cmd"], key: "r" }}
+          />
+          <Action.CopyToClipboard title="Copy URL" content={url} shortcut={{ modifiers: ["cmd"], key: "c" }} />
         </ActionPanel>
       }
     />
@@ -202,7 +225,7 @@ function Issue({ issue }: { issue: IssueOrPr }) {
       actions={
         <ActionPanel>
           <Action.OpenInBrowser title="Open on GitHub" url={issue.url} />
-          <Action.CopyToClipboard title="Copy URL" content={issue.url} />
+          <Action.CopyToClipboard title="Copy URL" content={issue.url} shortcut={{ modifiers: ["cmd"], key: "c" }} />
         </ActionPanel>
       }
     />
