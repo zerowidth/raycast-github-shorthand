@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
-import { loadConfig, Shorthand, getGraphqlWithAuth } from "./utils";
+import { Config, loadConfig, Shorthand, getGraphqlWithAuth } from "./utils";
 import { Image, Icon, Color, ActionPanel, Action, List } from "@raycast/api";
 
 
 export default function Main() {
   const config = loadConfig();
-  return <CombinedList users={config.users} repos={config.repos} />;
+  return <CombinedList config={config} />;
 }
 
-function CombinedList({ users, repos }: { users: Shorthand; repos: Shorthand }) {
+function CombinedList({config}: {config: Config}) {
   const [searchText, setSearchText] = useState("");
-  const exactMatch = Object.entries(users).some(([shorthand]) => shorthand == searchText);
+  const exactMatch = Object.entries(config.users).some(([shorthand]) => shorthand == searchText);
   return (
     <List
       searchText={searchText}
@@ -27,12 +27,12 @@ function CombinedList({ users, repos }: { users: Shorthand; repos: Shorthand }) 
             icon={{ source: "person.png", tintColor: Color.PrimaryText }}
             actions={
               <ActionPanel>
-                <Action.Push title="Search Repositories" target={<RepoList owner={searchText} repos={repos} />} />
+                <Action.Push title="Search Repositories" target={<RepoList owner={searchText} repos={config.repos} />} />
               </ActionPanel>
             }
           />
         )}
-        {Object.entries(users).map(([shorthand, full]) => (
+        {Object.entries(config.users).map(([shorthand, full]) => (
           <List.Item
             key={shorthand}
             title={`${shorthand}/`}
@@ -41,14 +41,14 @@ function CombinedList({ users, repos }: { users: Shorthand; repos: Shorthand }) 
             icon={{ source: "person.png", tintColor: Color.PrimaryText }}
             actions={
               <ActionPanel>
-                <Action.Push title="Search Repositories" target={<RepoList owner={full} repos={repos} />} />
+                <Action.Push title="Search Repositories" target={<RepoList owner={full} repos={config.repos} />} />
               </ActionPanel>
             }
           />
         ))}
       </List.Section>
       <List.Section title="Repositories">
-        {Object.entries(repos).map(([shorthand, full]) => (
+        {Object.entries(config.repos).map(([shorthand, full]) => (
           <List.Item
             key={shorthand}
             title={shorthand}
