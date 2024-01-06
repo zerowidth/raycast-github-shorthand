@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import fs from "fs";
 import yaml from "js-yaml";
 import { configPath, getGraphqlWithAuth } from "./utils";
-import { ActionPanel, Action, List, showToast, Toast } from "@raycast/api";
+import { Image, Icon, Color, ActionPanel, Action, List, showToast, Toast } from "@raycast/api";
 
 type Shorthand = { [shorthand: string]: string };
 
@@ -60,6 +60,7 @@ function CombinedList({ users, repos }: { users: Shorthand; repos: Shorthand }) 
             key={`search-${searchText}`}
             title={`${searchText}`}
             subtitle={searchText + "/..."}
+            icon={{ source: "person.png", tintColor: Color.PrimaryText }}
             actions={
               <ActionPanel>
                 <Action.Push title="Search Repositories" target={<RepoList owner={searchText} repos={repos} />} />
@@ -73,6 +74,7 @@ function CombinedList({ users, repos }: { users: Shorthand; repos: Shorthand }) 
             title={`${shorthand}/`}
             subtitle={full + "/..."}
             keywords={[full]}
+            icon={{ source: "person.png", tintColor: Color.PrimaryText }}
             actions={
               <ActionPanel>
                 <Action.Push title="Search Repositories" target={<RepoList owner={full} repos={repos} />} />
@@ -88,6 +90,7 @@ function CombinedList({ users, repos }: { users: Shorthand; repos: Shorthand }) 
             title={shorthand}
             subtitle={full}
             keywords={full.split("/")}
+            icon={{ source: "repo.png", tintColor: Color.PrimaryText }}
             actions={
               <ActionPanel>
                 <Action.Push title="Search Issues" target={<IssueSearch scope={`repo:${full}`} />} />
@@ -122,6 +125,7 @@ function RepoList({ owner, repos }: { owner: string; repos: Shorthand }) {
         <List.Item
           key={`search-${searchText}`}
           title={`${owner}/${searchText}`}
+          icon={{ source: "repo.png", tintColor: Color.PrimaryText }}
           actions={
             <ActionPanel>
               <Action.Push title="Search Issues" target={<IssueSearch scope={`repo:${owner}/${searchText}`} />} />
@@ -135,6 +139,7 @@ function RepoList({ owner, repos }: { owner: string; repos: Shorthand }) {
           title={shorthand}
           subtitle={full}
           keywords={full.split("/")}
+          icon={{ source: "repo.png", tintColor: Color.PrimaryText }}
           actions={
             <ActionPanel>
               <Action.Push title="Search Issues" target={<IssueSearch scope={`repo:${full}`} />} />
@@ -151,6 +156,8 @@ interface IssueOrPr {
   number: number;
   url: string;
   state: string;
+  stateReason?: string;
+  isDraft?: boolean;
   __typename: "Issue" | "PullRequest";
   repository: {
     nameWithOwner: string;
@@ -159,6 +166,33 @@ interface IssueOrPr {
 
 function issueReference(issue: IssueOrPr) {
   return `${issue.repository.nameWithOwner}#${issue.number}`;
+}
+
+function iconForIssue(issue: IssueOrPr): Image {
+  if (issue.__typename == "PullRequest") {
+    switch (issue.state) {
+      case "OPEN":
+        return issue.isDraft
+          ? { source: "git-pull-request-draft.png", tintColor: Color.SecondaryText }
+          : { source: "git-pull-request.png", tintColor: Color.Green };
+      case "CLOSED":
+        return { source: "git-pull-request-closed.png", tintColor: Color.Red };
+      case "MERGED":
+        return { source: "git-merge.png", tintColor: Color.Purple };
+      default:
+        return { source: Icon.QuestionMark, tintColor: Color.Red };
+    }
+  }
+  switch (issue.state) {
+    case "OPEN":
+      return { source: "issue-opened.png", tintColor: Color.Green };
+    case "CLOSED":
+      return issue.stateReason == "NOT_PLANNED"
+        ? { source: "skip.png", tintColor: Color.SecondaryText }
+        : { source: "issue-closed.png", tintColor: Color.Red };
+    default:
+      return { source: Icon.QuestionMark, tintColor: Color.Red };
+  }
 }
 
 function IssueSearch({ scope: scope }: { scope: string }) {
@@ -179,6 +213,7 @@ function IssueSearch({ scope: scope }: { scope: string }) {
                 title
                 url
                 state
+                stateReason
                 __typename
                 repository {
                   nameWithOwner
@@ -188,6 +223,7 @@ function IssueSearch({ scope: scope }: { scope: string }) {
                 number
                 title
                 url
+                isDraft
                 state
                 __typename
                 repository {
@@ -224,11 +260,8 @@ function Issue({ issue }: { issue: IssueOrPr }) {
   return (
     <List.Item
       title={issue.title}
-      accessories={[
-        {
-          text: issue.state,
-        },
-      ]}
+      icon={iconForIssue(issue)}
+      accessories={[{ text: issueReference(issue) }]}
       actions={
         <ActionPanel>
           <Action.OpenInBrowser title="Open in GitHub" url={issue.url} />
