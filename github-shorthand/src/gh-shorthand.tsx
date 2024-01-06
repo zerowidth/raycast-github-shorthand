@@ -105,9 +105,17 @@ function IssueSearch({ scope: scope }: { scope: string }) {
   const graphqlWithAuth = getGraphqlWithAuth();
   const [searchText, setSearchText] = useState(`is:open `);
   const [issues, setIssues] = useState([] as IssueOrPr[]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [cache, setCache] = useState({} as { [key: string]: IssueOrPr[] });
 
   useEffect(() => {
     const fetchIssues = async () => {
+      setIsLoading(true);
+      if (cache[searchText]) {
+        setIssues(cache[searchText]);
+        setIsLoading(false);
+        return
+      }
       const result = await graphqlWithAuth<{
         search: { nodes: IssueOrPr[] };
       }>(
@@ -143,7 +151,9 @@ function IssueSearch({ scope: scope }: { scope: string }) {
           searchText: `${scope} ${searchText}`,
         },
       );
+      setCache(prevCache => ({ ...prevCache, [searchText]: result.search.nodes }));
       setIssues(result.search.nodes);
+      setIsLoading(false);
     };
     fetchIssues();
   }, [searchText]);
@@ -153,6 +163,7 @@ function IssueSearch({ scope: scope }: { scope: string }) {
       searchText={searchText}
       onSearchTextChange={setSearchText}
       throttle={true}
+      isLoading={isLoading}
       searchBarPlaceholder={`Search issues in ${scope}...`}
     >
       {issues.map((issue) => (
@@ -192,11 +203,9 @@ function Repo({ repo, shorthand }: { repo: string; shorthand?: string }) {
             icon={Icon.MagnifyingGlass}
             target={<IssueSearch scope={`repo:${repo}`} />}
           />
-          <Action.CopyToClipboard title="Copy URL" content={url} />
           <Action.OpenInBrowser
             title="Open Repo on GitHub"
             url={url}
-            shortcut={{ modifiers: ["cmd"], key: "o" }}
             icon={{ source: "repo.png", tintColor: Color.PrimaryText }}
           />
           <Action.OpenInBrowser
@@ -211,6 +220,13 @@ function Repo({ repo, shorthand }: { repo: string; shorthand?: string }) {
             icon={{ source: "git-pull-request.png", tintColor: Color.PrimaryText }}
             shortcut={{ modifiers: ["cmd"], key: "r" }}
           />
+          <Action.OpenInBrowser
+            title="Create New Issue on GitHub"
+            url={`${url}/issues/new`}
+            icon={{ source: "plus.png", tintColor: Color.PrimaryText }}
+            shortcut={Keyboard.Shortcut.Common.New}
+          />
+          <Action.CopyToClipboard title="Copy URL" content={url} shortcut={Keyboard.Shortcut.Common.Copy} />
         </ActionPanel>
       }
     />
@@ -226,7 +242,7 @@ function Issue({ issue }: { issue: IssueOrPr }) {
       actions={
         <ActionPanel>
           <Action.OpenInBrowser title="Open on GitHub" url={issue.url} />
-          <Action.CopyToClipboard title="Copy URL" content={issue.url} />
+          <Action.CopyToClipboard title="Copy URL" content={issue.url} shortcut={Keyboard.Shortcut.Common.Copy} />
         </ActionPanel>
       }
     />
