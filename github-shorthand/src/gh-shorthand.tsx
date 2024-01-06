@@ -24,18 +24,18 @@ function CombinedList() {
       filtering={true}
       searchBarPlaceholder="Shorthand or user..."
     >
-      {!exactMatch && searchText.length > 0 && !searchText.includes("/") && !searchText.includes(" ") && (
-        <User key={`search-${searchText}`} user={searchText} />
-      )}
+      {Object.entries(config.repos).map(([shorthand, full]) => (
+        <Repo key={`repo-${shorthand}`} repo={full} shorthand={shorthand} />
+      ))}
       {Object.entries(config.users).map(([shorthand, full]) => (
         <User key={`user-${shorthand}`} user={full} shorthand={shorthand} />
       ))}
       {Object.entries(config.orgs).map(([shorthand, full]) => (
         <User key={`org-${shorthand}`} user={full} shorthand={shorthand} org />
       ))}
-      {Object.entries(config.repos).map(([shorthand, full]) => (
-        <Repo key={`repo-${shorthand}`} repo={full} shorthand={shorthand} />
-      ))}
+      {!exactMatch && searchText.length > 0 && !searchText.includes("/") && !searchText.includes(" ") && (
+        <User key={`search-${searchText}`} user={searchText} />
+      )}
     </List>
   );
 }
@@ -53,7 +53,7 @@ function RepoList({ owner }: { owner: string }) {
       searchText={searchText}
       onSearchTextChange={setSearchText}
       filtering={true}
-      searchBarPlaceholder={`Search repos in ${owner}/...`}
+      searchBarPlaceholder={`Select repository in ${owner}/...`}
       navigationTitle={`Repositories in ${owner}/...`}
     >
       {searchText.length > 0 && !exactMatch && (
@@ -257,7 +257,7 @@ function Repo({ repo, shorthand }: { repo: string; shorthand?: string }) {
           <Action.OpenInBrowser
             title="Create New Issue on GitHub"
             url={`${url}/issues/new`}
-            icon={{ source: "plus.png", tintColor: Color.PrimaryText }}
+            icon={Icon.PlusCircle}
             shortcut={Keyboard.Shortcut.Common.New}
           />
           <Action.CopyToClipboard title="Copy URL" content={url} shortcut={Keyboard.Shortcut.Common.Copy} />
