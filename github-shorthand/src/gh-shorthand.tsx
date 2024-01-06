@@ -75,17 +75,11 @@ export default function Main() {
               }
             />
           ))}
-          {Object.entries(config.users).length == 0 && (
-            <List.Item key="no-users" title="No user shorthand configured" subtitle="add users to your config file" />
-          )}
         </List.Section>
         <List.Section title="Repositories">
           {Object.entries(config.repos).map(([shorthand, full]) => (
             <List.Item key={shorthand} title={shorthand} subtitle={full} keywords={full.split("/")} />
           ))}
-          {Object.entries(config.repos).length == 0 && (
-            <List.Item key="no-repos" title="No repo shorthand configured" subtitle="add repos to your config file" />
-          )}
         </List.Section>
       </List>
     );
@@ -119,9 +113,6 @@ export default function Main() {
         {repos.map(([shorthand, full]) => (
           <List.Item key={shorthand} title={shorthand} subtitle={full} keywords={full.split("/")} />
         ))}
-        {repos.length == 0 && (
-            <List.Item key="no-repos" title={`No repo shorthand for ${owner} configured`} subtitle="add repos to your config file" />
-          )}
       </List>
     );
   }
