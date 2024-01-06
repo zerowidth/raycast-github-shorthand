@@ -1,46 +1,10 @@
 import { useEffect, useState } from "react";
-import fs from "fs";
-import yaml from "js-yaml";
-import { configPath, getGraphqlWithAuth } from "./utils";
-import { Image, Icon, Color, ActionPanel, Action, List, showToast, Toast } from "@raycast/api";
+import { loadConfig, Shorthand, getGraphqlWithAuth } from "./utils";
+import { Image, Icon, Color, ActionPanel, Action, List } from "@raycast/api";
 
-type Shorthand = { [shorthand: string]: string };
-
-type Config = {
-  users: Shorthand;
-  repos: Shorthand;
-};
 
 export default function Main() {
-  const [config, setConfig] = useState<Config>({ users: {}, repos: {} });
-
-  useEffect(() => {
-    fs.readFile(configPath, "utf-8", (err, data) => {
-      if (err) {
-        showToast({
-          style: Toast.Style.Failure,
-          title: "Failed to load config: " + err.message,
-        });
-      } else {
-        try {
-          const config = yaml.load(data) as Config;
-          config.users = config.users || {};
-          config.repos = config.repos || {};
-          setConfig(config);
-        } catch (err) {
-          showToast({
-            style: Toast.Style.Failure,
-            title: "Failed to load config: " + (err as Error).message,
-          });
-        }
-      }
-    });
-  }, []);
-
-  if (!config) {
-    return <List isLoading={true} />;
-  }
-
+  const config = loadConfig();
   return <CombinedList users={config.users} repos={config.repos} />;
 }
 
