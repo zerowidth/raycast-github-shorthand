@@ -54,6 +54,7 @@ function RepoList({ owner }: { owner: string }) {
       onSearchTextChange={setSearchText}
       filtering={true}
       searchBarPlaceholder={`Search repos in ${owner}/...`}
+      navigationTitle={`Repositories in ${owner}/...`}
     >
       {searchText.length > 0 && !exactMatch && (
         <Repo key={`repo-search-${searchText}`} repo={`${owner}/${searchText}`} />
@@ -109,7 +110,7 @@ function iconForIssue(issue: IssueOrPr): Image {
   }
 }
 
-function IssueSearch({ scope }: { scope: string }) {
+function IssueSearch({ scope, description }: { scope: string, description: string }) {
   const graphqlWithAuth = getGraphqlWithAuth();
   const config = useContext(ConfigContext);
   const [searchText, setSearchText] = useState(config.defaultScope.length > 0 ? `${config.defaultScope} ` : "");
@@ -173,7 +174,8 @@ function IssueSearch({ scope }: { scope: string }) {
       onSearchTextChange={setSearchText}
       throttle={true}
       isLoading={isLoading}
-      searchBarPlaceholder={`Search issues in ${scope}...`}
+      searchBarPlaceholder={`Search issues ${description}`}
+      navigationTitle={`Search issues ${description}`}
     >
       {issues.map((issue) => (
         <Issue key={issueReference(issue)} issue={issue} />
@@ -192,11 +194,22 @@ function User({ user, shorthand, org }: { user: string; shorthand?: string, org?
         <ActionPanel>
           <Action.Push
             title="Search Repositories"
+            icon={Icon.MagnifyingGlass}
             target={
               <ConfigContext.Provider value={useContext(ConfigContext)}>
                 <RepoList owner={user} />
               </ConfigContext.Provider>
             }
+          />
+          <Action.Push
+            title="Search Issues"
+            icon={Icon.MagnifyingGlass}
+            target={
+              <ConfigContext.Provider value={useContext(ConfigContext)}>
+                <IssueSearch scope={org ? `org:${user}` : `user:${user}`} description={`in ${user}/`} />
+              </ConfigContext.Provider>
+            }
+            shortcut={{ modifiers: ["cmd"], key: "i" }}
           />
         </ActionPanel>
       }
@@ -219,7 +232,7 @@ function Repo({ repo, shorthand }: { repo: string; shorthand?: string }) {
             icon={Icon.MagnifyingGlass}
             target={
               <ConfigContext.Provider value={useContext(ConfigContext)}>
-                <IssueSearch scope={`repo:${repo}`} />
+                <IssueSearch scope={`repo:${repo}`} description={`in ${repo}`} />
               </ConfigContext.Provider>
             }
           />

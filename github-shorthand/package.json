@@ -5,12 +5,14 @@
   "description": "Quick access and search for a configured set of repositories using shorthand references for users and repositories.",
   "icon": "command-icon.png",
   "author": "zerowidth",
+  "categories": ["Productivity", "Developer Tools"],
   "license": "MIT",
   "commands": [
     {
       "name": "gh-shorthand",
-      "title": "GitHub Shorthand",
-      "description": "Search or open GitHub repositories",
+      "title": "GitHub Shorthand Search",
+      "description": "Search or open GitHub repositories and issues with shorthand",
+      "subtitle": "Search repositories and issues with shorthand",
       "mode": "view"
     },
     {
