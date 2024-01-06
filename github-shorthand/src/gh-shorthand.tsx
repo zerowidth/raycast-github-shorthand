@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Config, loadConfig, Shorthand, getGraphqlWithAuth } from "./utils";
 import { Image, Icon, Color, ActionPanel, Action, List } from "@raycast/api";
 
+const ISSUE_COUNT = 50;
 
 export default function Main() {
   const config = loadConfig();
@@ -170,7 +171,7 @@ function IssueSearch({ scope: scope }: { scope: string }) {
         search: { nodes: IssueOrPr[] };
       }>(
         `query ($searchText: String!) {
-          search(query: $searchText, type: ISSUE, first: 10) {
+          search(query: $searchText, type: ISSUE, first: ${ISSUE_COUNT}) {
             nodes {
               ... on Issue {
                 number
