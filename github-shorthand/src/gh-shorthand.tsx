@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Config, loadConfig, Shorthand, getGraphqlWithAuth } from "./utils";
+import { Config, loadConfig, getGraphqlWithAuth } from "./utils";
 import { Image, Icon, Color, ActionPanel, Action, List } from "@raycast/api";
 
 const ISSUE_COUNT = 50;
@@ -9,6 +9,7 @@ export default function Main() {
   return <CombinedList config={config} />;
 }
 
+// CombinedList shows the configured shorthand users and repos along with the user-entered user prefix, if applicable
 function CombinedList({ config }: { config: Config }) {
   const [searchText, setSearchText] = useState("");
   const exactMatch = Object.entries(config.users).some(([shorthand]) => shorthand == searchText);
@@ -19,61 +20,25 @@ function CombinedList({ config }: { config: Config }) {
       filtering={true}
       searchBarPlaceholder="Shorthand or user..."
     >
-      {!exactMatch && searchText.length > 0 && !searchText.includes("/") && (
-        <List.Item
-          key={`search-${searchText}`}
-          title={`${searchText}`}
-          subtitle={searchText + "/..."}
-          icon={{ source: "person.png", tintColor: Color.PrimaryText }}
-          actions={
-            <ActionPanel>
-              <Action.Push title="Search Repositories" target={<RepoList owner={searchText} repos={config.repos} />} />
-            </ActionPanel>
-          }
-        />
+      {!exactMatch && searchText.length > 0 && !searchText.includes("/") && !searchText.includes(" ") && (
+        <User key={`search-${searchText}`} config={config} user={searchText} />
       )}
       {Object.entries(config.users).map(([shorthand, full]) => (
-        <List.Item
-          key={shorthand}
-          title={`${shorthand}/`}
-          subtitle={full + "/..."}
-          keywords={[full]}
-          icon={{ source: "person.png", tintColor: Color.PrimaryText }}
-          actions={
-            <ActionPanel>
-              <Action.Push title="Search Repositories" target={<RepoList owner={full} repos={config.repos} />} />
-            </ActionPanel>
-          }
-        />
+        <User key={`user-${shorthand}`} config={config} user={full} shorthand={shorthand} />
       ))}
       {Object.entries(config.repos).map(([shorthand, full]) => (
-        <List.Item
-          key={shorthand}
-          title={shorthand}
-          subtitle={full}
-          keywords={full.split("/")}
-          icon={{ source: "repo.png", tintColor: Color.PrimaryText }}
-          actions={
-            <ActionPanel>
-              <Action.Push title="Search Issues" target={<IssueSearch scope={`repo:${full}`} />} />
-            </ActionPanel>
-          }
-        />
+        <Repo key={`repo-${shorthand}`} repo={full} shorthand={shorthand} />
       ))}
     </List>
   );
 }
 
-function RepoList({ owner, repos }: { owner: string; repos: Shorthand }) {
+// RepoList shows the repos for a given owner along with a user-entered repo, if applicable
+function RepoList({ config, owner }: { config: Config; owner: string }) {
   const [searchText, setSearchText] = useState("");
-  const filtered = Object.entries(repos).filter(([, full]) => {
+  const filtered = Object.entries(config.repos).filter(([, full]) => {
     return full.split("/")[0] == owner;
   });
-  useEffect(() => {
-    filtered.filter(([, full]) => {
-      return full.includes(searchText);
-    });
-  }, [searchText]);
   const exactMatch = Object.entries(filtered).some(([, [shorthand]]) => shorthand == searchText);
   return (
     <List
@@ -83,30 +48,10 @@ function RepoList({ owner, repos }: { owner: string; repos: Shorthand }) {
       searchBarPlaceholder={`Search repos in ${owner}/...`}
     >
       {searchText.length > 0 && !exactMatch && (
-        <List.Item
-          key={`search-${searchText}`}
-          title={`${owner}/${searchText}`}
-          icon={{ source: "repo.png", tintColor: Color.PrimaryText }}
-          actions={
-            <ActionPanel>
-              <Action.Push title="Search Issues" target={<IssueSearch scope={`repo:${owner}/${searchText}`} />} />
-            </ActionPanel>
-          }
-        />
+        <Repo key={`repo-search-${searchText}`} repo={`${owner}/${searchText}`} />
       )}
       {filtered.map(([shorthand, full]) => (
-        <List.Item
-          key={shorthand}
-          title={shorthand}
-          subtitle={full}
-          keywords={full.split("/")}
-          icon={{ source: "repo.png", tintColor: Color.PrimaryText }}
-          actions={
-            <ActionPanel>
-              <Action.Push title="Search Issues" target={<IssueSearch scope={`repo:${full}`} />} />
-            </ActionPanel>
-          }
-        />
+        <Repo key={`repo-${shorthand}`} repo={full} shorthand={shorthand} />
       ))}
     </List>
   );
@@ -214,6 +159,37 @@ function IssueSearch({ scope: scope }: { scope: string }) {
         <Issue key={issueReference(issue)} issue={issue} />
       ))}
     </List>
+  );
+}
+
+function User({ config, user, shorthand }: { config: Config; user: string; shorthand?: string }) {
+  return (
+    <List.Item
+      title={shorthand ? `${shorthand}/` : user}
+      subtitle={`${user}/...`}
+      icon={{ source: "person.png", tintColor: Color.PrimaryText }}
+      actions={
+        <ActionPanel>
+          <Action.Push title="Search Repositories" target={<RepoList owner={user} config={config} />} />
+        </ActionPanel>
+      }
+    />
+  );
+}
+
+function Repo({ repo, shorthand }: { repo: string; shorthand?: string }) {
+  return (
+    <List.Item
+      title={shorthand ? shorthand : repo}
+      subtitle={shorthand ? repo : undefined}
+      icon={{ source: "repo.png", tintColor: Color.PrimaryText }}
+      keywords={repo.split("/")}
+      actions={
+        <ActionPanel>
+          <Action.Push title="Search Issues" target={<IssueSearch scope={`repo:${repo}`} />} />
+        </ActionPanel>
+      }
+    />
   );
 }
 
