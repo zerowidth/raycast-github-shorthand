@@ -1,9 +1,8 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { Config, defaultConfig, loadConfig, getGraphqlWithAuth } from "./utils";
+import { useContext, useEffect, useState } from "react";
+import { ConfigContext, loadConfig, getGraphqlWithAuth } from "./utils";
 import { Image, Icon, Color, ActionPanel, Action, List, Keyboard } from "@raycast/api";
 
 const ISSUE_COUNT = 50;
-const ConfigContext = createContext<Config>(defaultConfig);
 
 export default function Main() {
   return (

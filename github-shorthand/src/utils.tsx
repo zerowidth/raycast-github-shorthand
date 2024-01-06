@@ -5,6 +5,7 @@ import { graphql } from "@octokit/graphql";
 import fetch from "node-fetch";
 import { showToast, Toast } from "@raycast/api";
 import yaml from "js-yaml";
+import { createContext } from "react";
 
 const defaultConfigFile = `---
 # Configuration file for GitHub Shorthand
@@ -50,10 +51,11 @@ export function loadConfig(): Config {
 
   if (data) {
     try {
-      const config = yaml.load(data) as Config;
-      config.defaultScope = config.defaultScope || "";
-      config.users = config.users || {};
-      config.repos = config.repos || {};
+      const loaded = yaml.load(data) as Partial<Config>;
+      const config: Config = {
+        ...defaultConfig,
+        ...loaded,
+      }
       return config;
     } catch (err) {
       showToast({
@@ -65,6 +67,8 @@ export function loadConfig(): Config {
 
   return defaultConfig;
 }
+
+export const ConfigContext = createContext<Config>(defaultConfig);
 
 export function initializeConfigFile(): void {
   fs.mkdirSync(environment.supportPath, { recursive: true });
