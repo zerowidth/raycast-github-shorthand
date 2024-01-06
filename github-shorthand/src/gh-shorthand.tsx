@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import fs from "fs";
 import yaml from "js-yaml";
-import { configPath } from "./utils";
+import { configPath, getGraphqlWithAuth } from "./utils";
 import { ActionPanel, Action, List, showToast, Toast } from "@raycast/api";
 
 type Shorthand = { [shorthand: string]: string };
@@ -44,12 +44,7 @@ export default function Main() {
   return <CombinedList users={config.users} repos={config.repos} />;
 }
 
-interface CombinedListProps {
-  users: Shorthand;
-  repos: Shorthand;
-}
-
-function CombinedList({ users, repos }: CombinedListProps) {
+function CombinedList({ users, repos }: { users: Shorthand; repos: Shorthand }) {
   const [searchText, setSearchText] = useState("");
   const exactMatch = Object.entries(users).some(([shorthand]) => shorthand == searchText);
   return (
@@ -67,7 +62,7 @@ function CombinedList({ users, repos }: CombinedListProps) {
             subtitle={searchText + "/..."}
             actions={
               <ActionPanel>
-                <Action.Push title="View Repositories" target={<RepoList owner={searchText} repos={repos} />} />
+                <Action.Push title="Search Repositories" target={<RepoList owner={searchText} repos={repos} />} />
               </ActionPanel>
             }
           />
@@ -80,7 +75,7 @@ function CombinedList({ users, repos }: CombinedListProps) {
             keywords={[full]}
             actions={
               <ActionPanel>
-                <Action.Push title="View Repositories" target={<RepoList owner={full} repos={repos} />} />
+                <Action.Push title="Search Repositories" target={<RepoList owner={full} repos={repos} />} />
               </ActionPanel>
             }
           />
@@ -88,19 +83,24 @@ function CombinedList({ users, repos }: CombinedListProps) {
       </List.Section>
       <List.Section title="Repositories">
         {Object.entries(repos).map(([shorthand, full]) => (
-          <List.Item key={shorthand} title={shorthand} subtitle={full} keywords={full.split("/")} />
+          <List.Item
+            key={shorthand}
+            title={shorthand}
+            subtitle={full}
+            keywords={full.split("/")}
+            actions={
+              <ActionPanel>
+                <Action.Push title="Search Issues" target={<IssueSearch scope={`repo:${full}`} />} />
+              </ActionPanel>
+            }
+          />
         ))}
       </List.Section>
     </List>
   );
 }
 
-interface RepoListProps {
-  owner: string;
-  repos: Shorthand;
-}
-
-function RepoList({ owner: owner, repos: repos }: RepoListProps) {
+function RepoList({ owner, repos }: { owner: string; repos: Shorthand }) {
   const [searchText, setSearchText] = useState("");
   const filtered = Object.entries(repos).filter(([, full]) => {
     return full.split("/")[0] == owner;
@@ -113,19 +113,128 @@ function RepoList({ owner: owner, repos: repos }: RepoListProps) {
   const exactMatch = Object.entries(filtered).some(([, [shorthand]]) => shorthand == searchText);
   return (
     <List
-      navigationTitle={`I AM A NAVIGATION TITLE {owner}/...`}
       searchText={searchText}
       onSearchTextChange={setSearchText}
       filtering={true}
-      throttle={true}
       searchBarPlaceholder={`Search repos in ${owner}/...`}
     >
       {searchText.length > 0 && !exactMatch && (
-        <List.Item key={`search-${searchText}`} title={`${owner}/${searchText}`} />
+        <List.Item
+          key={`search-${searchText}`}
+          title={`${owner}/${searchText}`}
+          actions={
+            <ActionPanel>
+              <Action.Push title="Search Issues" target={<IssueSearch scope={`repo:${owner}/${searchText}`} />} />
+            </ActionPanel>
+          }
+        />
       )}
       {filtered.map(([shorthand, full]) => (
-        <List.Item key={shorthand} title={shorthand} subtitle={full} keywords={full.split("/")} />
+        <List.Item
+          key={shorthand}
+          title={shorthand}
+          subtitle={full}
+          keywords={full.split("/")}
+          actions={
+            <ActionPanel>
+              <Action.Push title="Search Issues" target={<IssueSearch scope={`repo:${full}`} />} />
+            </ActionPanel>
+          }
+        />
       ))}
     </List>
+  );
+}
+
+interface IssueOrPr {
+  title: string;
+  number: number;
+  url: string;
+  state: string;
+  __typename: "Issue" | "PullRequest";
+  repository: {
+    nameWithOwner: string;
+  };
+}
+
+function issueReference(issue: IssueOrPr) {
+  return `${issue.repository.nameWithOwner}#${issue.number}`;
+}
+
+function IssueSearch({ scope: scope }: { scope: string }) {
+  const graphqlWithAuth = getGraphqlWithAuth();
+  const [searchText, setSearchText] = useState(`is:open `);
+  const [issues, setIssues] = useState([] as IssueOrPr[]);
+
+  useEffect(() => {
+    const fetchIssues = async () => {
+      const result = await graphqlWithAuth<{
+        search: { nodes: IssueOrPr[] };
+      }>(
+        `query ($searchText: String!) {
+          search(query: $searchText, type: ISSUE, first: 10) {
+            nodes {
+              ... on Issue {
+                number
+                title
+                url
+                state
+                __typename
+                repository {
+                  nameWithOwner
+                }
+              }
+              ... on PullRequest {
+                number
+                title
+                url
+                state
+                __typename
+                repository {
+                  nameWithOwner
+                }
+              }
+            }
+          }
+        }`,
+        {
+          searchText: `${scope} ${searchText}`,
+        },
+      );
+      setIssues(result.search.nodes);
+    };
+    fetchIssues();
+  }, [searchText]);
+
+  return (
+    <List
+      searchText={searchText}
+      onSearchTextChange={setSearchText}
+      throttle={true}
+      searchBarPlaceholder={`Search issues in ${scope}...`}
+    >
+      {issues.map((issue) => (
+        <Issue key={issueReference(issue)} issue={issue} />
+      ))}
+    </List>
+  );
+}
+
+function Issue({ issue }: { issue: IssueOrPr }) {
+  return (
+    <List.Item
+      title={issue.title}
+      accessories={[
+        {
+          text: issue.state,
+        },
+      ]}
+      actions={
+        <ActionPanel>
+          <Action.OpenInBrowser title="Open in GitHub" url={issue.url} />
+          <Action.CopyToClipboard title="Copy URL" content={issue.url} />
+        </ActionPanel>
+      }
+    />
   );
 }

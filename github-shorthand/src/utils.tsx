@@ -1,6 +1,8 @@
-import { environment } from "@raycast/api";
+import { environment, getPreferenceValues } from "@raycast/api";
 import path from "path";
 import fs from "fs";
+import { graphql } from "@octokit/graphql";
+import  fetch  from "node-fetch";
 
 const defaultConfig = `---
 # Configure your GitHub shorthand users, organizations, and repos here
@@ -22,4 +24,18 @@ export function initializeConfigFile(): void {
   if (!fs.existsSync(configPath)) {
     fs.writeFileSync(configPath, defaultConfig);
   }
+}
+export function getGraphqlWithAuth() {
+  interface AuthConfig {
+    githubApiKey: string;
+  }
+  const authConfig = getPreferenceValues() as AuthConfig;
+  return graphql.defaults({
+    request: {
+      fetch: fetch,
+    },
+    headers: {
+      authorization: `token ${authConfig.githubApiKey}`,
+    },
+  });
 }

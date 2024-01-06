@@ -21,9 +21,20 @@
       "mode": "no-view"
     }
   ],
+  "preferences": [
+    {
+      "name": "githubApiKey",
+      "title": "GitHub API Key",
+      "description": "Your GitHub API key",
+      "type": "password",
+      "required": true
+    }
+  ],
   "dependencies": {
+    "@octokit/graphql": "^7.0.2",
     "@raycast/api": "^1.64.4",
     "js-yaml": "^4.1.0",
+    "node-fetch": "^3.3.2",
     "open": "^8.4.2"
   },
   "devDependencies": {
@@ -33,6 +44,7 @@
     "@types/react": "18.2.27",
     "eslint": "^8.51.0",
     "prettier": "^3.0.3",
+    "react-devtools": "^4.28.4",
     "typescript": "^5.2.2"
   },
   "scripts": {
