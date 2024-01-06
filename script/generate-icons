@@ -4,6 +4,7 @@ const path = require("path");
 const cheerio = require("cheerio");
 const sharp = require("sharp");
 const octicons = require("@primer/octicons");
+const fs = require("fs");
 
 const toConvert = [
   "person",
@@ -21,7 +22,6 @@ const toConvert = [
 convertSVGs()
   .then(() => process.exit(0))
   .catch((err) => {
-    // eslint-disable-next-line no-console
     console.error(err);
     process.exit(1);
   });
@@ -32,17 +32,24 @@ function convertSVGs() {
   const targetSize = 512;
   const density = (defaultDPI * targetSize) / originalSize;
   const outputPath = path.join(__dirname, "..", "github-shorthand", "assets");
-  return Promise.all(
-    toConvert.map(async (name) => {
-      const pngPath = path.join(outputPath, `${name}.png`);
-      const svgData = octicons[name].toSVG();
-      const $svg = cheerio.load(svgData, { xmlMode: true });
-      $svg("svg").attr("fill", "#FFF");
-      const coloredSvgData = $svg.html();
-      await sharp(Buffer.from(coloredSvgData), { density })
-        .resize(512)
-        .png()
-        .toFile(pngPath);
-    })
-  );
+  conversions = toConvert.map(async (name) => {
+    const pngPath = path.join(outputPath, `${name}.png`);
+    const svgData = octicons[name].toSVG();
+    const $svg = cheerio.load(svgData, { xmlMode: true });
+    $svg("svg").attr("fill", "#FFF");
+    const coloredSvgData = $svg.html();
+    await sharp(Buffer.from(coloredSvgData), { density })
+      .resize(512)
+      .png()
+      .toFile(pngPath);
+  });
+  conversions.push((async () => {
+    const svgPath = path.join(outputPath, `rocket.svg`);
+    const svgData = octicons["rocket"].toSVG();
+    const $svg = cheerio.load(svgData, { xmlMode: true });
+    $svg("svg").attr("fill", "#FFF");
+    const coloredSvgData = $svg.html();
+    await fs.promises.writeFile(svgPath, coloredSvgData);
+  })());
+  return Promise.all(conversions)
 }
