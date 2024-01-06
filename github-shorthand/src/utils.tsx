@@ -11,7 +11,7 @@ const defaultConfigFile = `---
 # Configuration file for GitHub Shorthand
 #
 # Default search scope for issues.
-default_scope: "is:open"
+defaultScope: "is:open"
 
 # This is a map of user shorthand to their full GitHub login:
 users:
