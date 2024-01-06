@@ -229,7 +229,7 @@ function Issue({ issue }: { issue: IssueOrPr }) {
       accessories={[{ text: issueReference(issue) }]}
       actions={
         <ActionPanel>
-          <Action.OpenInBrowser title="Open in GitHub" url={issue.url} />
+          <Action.OpenInBrowser title="Open on GitHub" url={issue.url} />
           <Action.CopyToClipboard title="Copy URL" content={issue.url} />
         </ActionPanel>
       }
