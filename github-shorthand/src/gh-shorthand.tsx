@@ -27,7 +27,7 @@ function CombinedList({ config }: { config: Config }) {
         <User key={`user-${shorthand}`} config={config} user={full} shorthand={shorthand} />
       ))}
       {Object.entries(config.repos).map(([shorthand, full]) => (
-        <Repo key={`repo-${shorthand}`} repo={full} shorthand={shorthand} />
+        <Repo key={`repo-${shorthand}`} config={config} repo={full} shorthand={shorthand} />
       ))}
     </List>
   );
@@ -48,10 +48,10 @@ function RepoList({ config, owner }: { config: Config; owner: string }) {
       searchBarPlaceholder={`Search repos in ${owner}/...`}
     >
       {searchText.length > 0 && !exactMatch && (
-        <Repo key={`repo-search-${searchText}`} repo={`${owner}/${searchText}`} />
+        <Repo key={`repo-search-${searchText}`} config={config} repo={`${owner}/${searchText}`} />
       )}
       {filtered.map(([shorthand, full]) => (
-        <Repo key={`repo-${shorthand}`} repo={full} shorthand={shorthand} />
+        <Repo key={`repo-${shorthand}`} config={config} repo={full} shorthand={shorthand} />
       ))}
     </List>
   );
@@ -101,9 +101,9 @@ function iconForIssue(issue: IssueOrPr): Image {
   }
 }
 
-function IssueSearch({ scope: scope }: { scope: string }) {
+function IssueSearch({ config, scope }: { config: Config; scope: string }) {
   const graphqlWithAuth = getGraphqlWithAuth();
-  const [searchText, setSearchText] = useState(`is:open `);
+  const [searchText, setSearchText] = useState(config.defaultScope.length > 0 ? `${config.defaultScope} ` : "");
   const [issues, setIssues] = useState([] as IssueOrPr[]);
   const [isLoading, setIsLoading] = useState(false);
   const [cache, setCache] = useState({} as { [key: string]: IssueOrPr[] });
@@ -114,7 +114,7 @@ function IssueSearch({ scope: scope }: { scope: string }) {
       if (cache[searchText]) {
         setIssues(cache[searchText]);
         setIsLoading(false);
-        return
+        return;
       }
       const result = await graphqlWithAuth<{
         search: { nodes: IssueOrPr[] };
@@ -151,7 +151,7 @@ function IssueSearch({ scope: scope }: { scope: string }) {
           searchText: `${scope} ${searchText}`,
         },
       );
-      setCache(prevCache => ({ ...prevCache, [searchText]: result.search.nodes }));
+      setCache((prevCache) => ({ ...prevCache, [searchText]: result.search.nodes }));
       setIssues(result.search.nodes);
       setIsLoading(false);
     };
@@ -188,7 +188,7 @@ function User({ config, user, shorthand }: { config: Config; user: string; short
   );
 }
 
-function Repo({ repo, shorthand }: { repo: string; shorthand?: string }) {
+function Repo({ config, repo, shorthand }: { config: Config; repo: string; shorthand?: string }) {
   const url = `https://github.com/${repo}`;
   return (
     <List.Item
@@ -201,12 +201,13 @@ function Repo({ repo, shorthand }: { repo: string; shorthand?: string }) {
           <Action.Push
             title="Search Issues"
             icon={Icon.MagnifyingGlass}
-            target={<IssueSearch scope={`repo:${repo}`} />}
+            target={<IssueSearch config={config} scope={`repo:${repo}`} />}
           />
           <Action.OpenInBrowser
             title="Open Repo on GitHub"
             url={url}
             icon={{ source: "repo.png", tintColor: Color.PrimaryText }}
+            shortcut={Keyboard.Shortcut.Common.Open}
           />
           <Action.OpenInBrowser
             title="Open Issues on GitHub"

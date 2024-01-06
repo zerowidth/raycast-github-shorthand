@@ -7,15 +7,17 @@ import { showToast, Toast } from "@raycast/api";
 import yaml from "js-yaml";
 
 const defaultConfig = `---
-# Configure your GitHub shorthand users, organizations, and repos here
+# Configuration file for GitHub Shorthand
+#
+# Default search scope for issues.
+default_scope: "is:open"
+
+# This is a map of user shorthand to their full GitHub login:
 users:
-  # this is a map of users (or organizations) shorthand to their full GitHub login:
-  #
-  # "gh": "github"
   # "z": "zerowidth"
+
+# This is map of repository shorthands to their full path on GitHub:
 repos:
-  # This is map of repository shorthands to their full GitHub path:
-  #
   # "rs": "raycast/script-commands"
   # "df": "zerowidth/dotfiles"
 `;
@@ -23,6 +25,7 @@ repos:
 export const configPath = path.join(environment.supportPath, "gh-shorthand.yaml");
 
 export type Config = {
+  defaultScope: string;
   users: Shorthand;
   repos: Shorthand;
 };
@@ -43,6 +46,7 @@ export function loadConfig(): Config {
   if (data) {
     try {
       const config = yaml.load(data) as Config;
+      config.defaultScope = config.defaultScope || "";
       config.users = config.users || {};
       config.repos = config.repos || {};
       return config;
@@ -54,7 +58,7 @@ export function loadConfig(): Config {
     }
   }
 
-  return { users: {}, repos: {} };
+  return { users: {}, repos: {}, defaultScope: "" };
 }
 
 export function initializeConfigFile(): void {
