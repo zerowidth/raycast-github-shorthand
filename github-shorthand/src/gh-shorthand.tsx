@@ -21,7 +21,10 @@ export default function Main() {
         });
       } else {
         try {
-          setConfig(yaml.load(data) as Config);
+          const config = yaml.load(data) as Config;
+          config.users = config.users || {};
+          config.repos = config.repos || {};
+          setConfig(config);
         } catch (err) {
           showToast({
             style: Toast.Style.Failure,
@@ -38,46 +41,52 @@ export default function Main() {
 
   function FullList() {
     const [searchText, setSearchText] = useState("");
-    const exactMatch = Object.entries(config.users).some(([shorthand,]) => shorthand == searchText);
+    const exactMatch = Object.entries(config.users).some(([shorthand]) => shorthand == searchText);
     return (
-      <List searchText={searchText} onSearchTextChange={setSearchText} filtering={true}
-      searchBarPlaceholder="Shorthand or user...">
-        {Object.keys(config.users).length > 0 && (
-          <List.Section title="Users">
-            {!exactMatch && searchText.length > 0 && !searchText.includes("/") && (
-              <List.Item
-                key={`search-${searchText}`}
-                title={`${searchText}`}
-                subtitle={searchText + "/..."}
-                actions={
-                  <ActionPanel>
-                    <Action.Push title="View Repositories" target={<RepoList owner={searchText} />} />
-                  </ActionPanel>
-                }
-              />
-            )}
-            {Object.entries(config.users).map(([shorthand, full]) => (
-              <List.Item
-                key={shorthand}
-                title={`${shorthand}/`}
-                subtitle={full + "/..."}
-                keywords={[full]}
-                actions={
-                  <ActionPanel>
-                    <Action.Push title="View Repositories" target={<RepoList owner={full} />} />
-                  </ActionPanel>
-                }
-              />
-            ))}
-          </List.Section>
-        )}
-        {Object.keys(config.repos).length > 0 && (
-          <List.Section title="Repositories">
-            {Object.entries(config.repos).map(([shorthand, full]) => (
-              <List.Item key={shorthand} title={shorthand} subtitle={full} keywords={full.split("/")} />
-            ))}
-          </List.Section>
-        )}
+      <List
+        searchText={searchText}
+        onSearchTextChange={setSearchText}
+        filtering={true}
+        searchBarPlaceholder="Shorthand or user..."
+      >
+        <List.Section title="Users">
+          {!exactMatch && searchText.length > 0 && !searchText.includes("/") && (
+            <List.Item
+              key={`search-${searchText}`}
+              title={`${searchText}`}
+              subtitle={searchText + "/..."}
+              actions={
+                <ActionPanel>
+                  <Action.Push title="View Repositories" target={<RepoList owner={searchText} />} />
+                </ActionPanel>
+              }
+            />
+          )}
+          {Object.entries(config.users).map(([shorthand, full]) => (
+            <List.Item
+              key={shorthand}
+              title={`${shorthand}/`}
+              subtitle={full + "/..."}
+              keywords={[full]}
+              actions={
+                <ActionPanel>
+                  <Action.Push title="View Repositories" target={<RepoList owner={full} />} />
+                </ActionPanel>
+              }
+            />
+          ))}
+          {Object.entries(config.users).length == 0 && (
+            <List.Item key="no-users" title="No user shorthand configured" subtitle="add users to your config file" />
+          )}
+        </List.Section>
+        <List.Section title="Repositories">
+          {Object.entries(config.repos).map(([shorthand, full]) => (
+            <List.Item key={shorthand} title={shorthand} subtitle={full} keywords={full.split("/")} />
+          ))}
+          {Object.entries(config.repos).length == 0 && (
+            <List.Item key="no-repos" title="No repo shorthand configured" subtitle="add repos to your config file" />
+          )}
+        </List.Section>
       </List>
     );
   }
@@ -88,21 +97,31 @@ export default function Main() {
 
   function RepoList({ owner: owner }: RepoListProps) {
     const [searchText, setSearchText] = useState("");
-    const items = Object.entries(config.repos).filter(([, full]) => {
+    const repos = Object.entries(config.repos).filter(([, full]) => {
       return full.split("/")[0] == owner;
     });
     useEffect(() => {
-      items.filter(([, full]) => {
+      repos.filter(([, full]) => {
         return full.includes(searchText);
       });
     }, [searchText]);
-    const exactMatch = Object.entries(items).some(([, [shorthand]]) => shorthand == searchText);
+    const exactMatch = Object.entries(repos).some(([, [shorthand]]) => shorthand == searchText);
     return (
-      <List searchText={searchText} onSearchTextChange={setSearchText} filtering={true}>
-        {searchText.length > 0 && !exactMatch && <List.Item key={`search-${searchText}`} title={`${owner}/${searchText}`} />}
-        {Object.entries(items).map(([, [shorthand, full]]) => (
+      <List
+        searchText={searchText}
+        onSearchTextChange={setSearchText}
+        filtering={true}
+        searchBarPlaceholder={`Search repos in ${owner}/...`}
+      >
+        {searchText.length > 0 && !exactMatch && (
+          <List.Item key={`search-${searchText}`} title={`${owner}/${searchText}`} />
+        )}
+        {repos.map(([shorthand, full]) => (
           <List.Item key={shorthand} title={shorthand} subtitle={full} keywords={full.split("/")} />
         ))}
+        {repos.length == 0 && (
+            <List.Item key="no-repos" title={`No repo shorthand for ${owner} configured`} subtitle="add repos to your config file" />
+          )}
       </List>
     );
   }
