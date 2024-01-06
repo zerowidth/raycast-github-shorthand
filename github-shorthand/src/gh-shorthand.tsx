@@ -192,9 +192,11 @@ function Repo({ repo, shorthand }: { repo: string; shorthand?: string }) {
             icon={Icon.MagnifyingGlass}
             target={<IssueSearch scope={`repo:${repo}`} />}
           />
+          <Action.CopyToClipboard title="Copy URL" content={url} />
           <Action.OpenInBrowser
             title="Open Repo on GitHub"
             url={url}
+            shortcut={{ modifiers: ["cmd"], key: "o" }}
             icon={{ source: "repo.png", tintColor: Color.PrimaryText }}
           />
           <Action.OpenInBrowser
@@ -209,7 +211,6 @@ function Repo({ repo, shorthand }: { repo: string; shorthand?: string }) {
             icon={{ source: "git-pull-request.png", tintColor: Color.PrimaryText }}
             shortcut={{ modifiers: ["cmd"], key: "r" }}
           />
-          <Action.CopyToClipboard title="Copy URL" content={url} shortcut={{ modifiers: ["cmd"], key: "c" }} />
         </ActionPanel>
       }
     />
@@ -225,7 +226,7 @@ function Issue({ issue }: { issue: IssueOrPr }) {
       actions={
         <ActionPanel>
           <Action.OpenInBrowser title="Open on GitHub" url={issue.url} />
-          <Action.CopyToClipboard title="Copy URL" content={issue.url} shortcut={{ modifiers: ["cmd"], key: "c" }} />
+          <Action.CopyToClipboard title="Copy URL" content={issue.url} />
         </ActionPanel>
       }
     />
