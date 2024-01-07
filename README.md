@@ -11,7 +11,7 @@ repos:
   mm: "my-company/monolith"
 ```
 
-When you run the "GitHub Shorthand Search" command, you can type `mm`, hit enter, and see the issues and PRs for that repo. This search starts with a configurable default scope and can be edited in the raycast window to refine the search results.
+When you run the "GitHub Shorthand Issue Search" command, you can type `mm`, hit enter, and immediately see the issues and PRs for that repo. This search starts with a configurable default scope, and can be edited in the raycast window to refine the search results.
 
 The default config file has examples for each feature, including users, orgs, repos, and multi-repo groups.
 

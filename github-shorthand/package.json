@@ -9,9 +9,9 @@
   "license": "MIT",
   "commands": [
     {
-      "name": "gh-shorthand",
-      "title": "GitHub Shorthand Search",
-      "description": "Search or open GitHub repositories and issues with shorthand",
+      "name": "issue-search",
+      "title": "GitHub Shorthand Issue Search",
+      "description": "Search or open GitHub issues with shorthand",
       "subtitle": "Search repositories and issues with shorthand",
       "mode": "view"
     },
