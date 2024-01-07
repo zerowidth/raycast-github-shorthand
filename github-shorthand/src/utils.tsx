@@ -49,6 +49,7 @@ export type Config = {
   repos: Shorthand;
   multi: { [name: string]: { name: string; repos: string[] } };
   usersAndOrgs: Shorthand;
+  isEmpty: () => boolean;
 };
 
 export const defaultConfig = {
@@ -60,7 +61,25 @@ export const defaultConfig = {
   get usersAndOrgs() {
     return { ...this.users, ...this.orgs };
   },
+  isEmpty() {
+    return (
+      Object.keys(this.users).length === 0 &&
+      Object.keys(this.orgs).length === 0 &&
+      Object.keys(this.repos).length === 0 &&
+      Object.keys(this.multi).length === 0
+    );
+  },
 } as Config;
+
+export function isEmpty(config: Config): boolean {
+  return (
+    Object.keys(config.users).length === 0 &&
+    Object.keys(config.orgs).length === 0 &&
+    Object.keys(config.repos).length === 0 &&
+    Object.keys(config.multi).length === 0
+  );
+}
+
 
 export type Shorthand = { [shorthand: string]: string };
 

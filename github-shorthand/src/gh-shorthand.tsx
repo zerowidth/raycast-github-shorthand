@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { ConfigContext, loadConfig, getGraphqlWithAuth } from "./utils";
-import { Image, Icon, Color, ActionPanel, Action, List, Keyboard } from "@raycast/api";
+import { Image, Icon, Color, ActionPanel, Action, List, Keyboard, launchCommand, LaunchType } from "@raycast/api";
 
 const ISSUE_COUNT = 50;
 
@@ -24,7 +24,26 @@ function CombinedList() {
       filtering={true}
       searchBarPlaceholder="Shorthand or user..."
     >
-      {Object.entries(config.multi).map(([shorthand, { name, repos  }]) => (
+      {config.isEmpty() && searchText.length == 0 && (
+        <List.EmptyView
+          title="No shorthand configured"
+          description="Type a user or org name, or select 'Edit Configuration File' to configure shorthand for GitHub users, orgs, repos and more."
+          icon={Icon.QuestionMark}
+          actions={
+            <ActionPanel>
+              <Action
+                title="Edit Configuration File"
+                icon={Icon.Gear}
+                onAction={async () => {
+                  await launchCommand({ name: "configure", type: LaunchType.UserInitiated });
+                }}
+                shortcut={{ modifiers: ["cmd"], key: "e" }}
+              />
+            </ActionPanel>
+          }
+        />
+      )}
+      {Object.entries(config.multi).map(([shorthand, { name, repos }]) => (
         <Multi key={`multi-${shorthand}`} shorthand={shorthand} name={name} repos={repos} />
       ))}
       {Object.entries(config.repos).map(([shorthand, full]) => (
@@ -59,6 +78,25 @@ function RepoList({ owner }: { owner: string }) {
       searchBarPlaceholder={`Select repository in ${owner}/...`}
       navigationTitle={`Repositories in ${owner}/...`}
     >
+      {filtered.length == 0 && searchText.length == 0 && (
+        <List.EmptyView
+          title={`No shorthand under ${owner}/... configured`}
+          description="Type a user or org name, or select 'Edit Configuration File' to configure shorthand for GitHub users, orgs, repos and more."
+          icon={Icon.QuestionMark}
+          actions={
+            <ActionPanel>
+              <Action
+                title="Edit Configuration File"
+                icon={Icon.Gear}
+                onAction={async () => {
+                  await launchCommand({ name: "configure", type: LaunchType.UserInitiated });
+                }}
+                shortcut={{ modifiers: ["cmd"], key: "e" }}
+              />
+            </ActionPanel>
+          }
+        />
+      )}
       {searchText.length > 0 && !exactMatch && (
         <Repo key={`repo-search-${searchText}`} repo={`${owner}/${searchText}`} />
       )}
@@ -113,7 +151,7 @@ function iconForIssue(issue: IssueOrPr): Image {
   }
 }
 
-function IssueSearch({ scope, description }: { scope: string, description: string }) {
+function IssueSearch({ scope, description }: { scope: string; description: string }) {
   const graphqlWithAuth = getGraphqlWithAuth();
   const config = useContext(ConfigContext);
   const [searchText, setSearchText] = useState(config.defaultScope.length > 0 ? `${config.defaultScope} ` : "");
@@ -187,7 +225,7 @@ function IssueSearch({ scope, description }: { scope: string, description: strin
   );
 }
 
-function User({ user, shorthand, org }: { user: string; shorthand?: string, org?: boolean }) {
+function User({ user, shorthand, org }: { user: string; shorthand?: string; org?: boolean }) {
   return (
     <List.Item
       title={shorthand ? `${shorthand}/` : user}
@@ -270,7 +308,7 @@ function Repo({ repo, shorthand }: { repo: string; shorthand?: string }) {
   );
 }
 
-function Multi({shorthand, name, repos} : {shorthand: string, name: string, repos: string[]}) {
+function Multi({ shorthand, name, repos }: { shorthand: string; name: string; repos: string[] }) {
   return (
     <List.Item
       title={shorthand}
