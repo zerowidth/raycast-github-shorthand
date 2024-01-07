@@ -19,7 +19,7 @@
       "name": "configure",
       "title": "Configure GitHub Shorthand",
       "subtitle": "Open the GitHub Shorthand configuration file",
-      "description": "Open the configuration YAML file in VSCode",
+      "description": "Open the configuration YAML file in your editor",
       "mode": "no-view"
     }
   ],
@@ -30,6 +30,13 @@
       "description": "Your GitHub API key",
       "type": "password",
       "required": true
+    },
+    {
+      "name": "editor",
+      "type": "appPicker",
+      "title": "Editor",
+      "description": "The editor app to use when opening the configuration file",
+      "default": "/Applications/Visual Studio Code.app"
     }
   ],
   "dependencies": {

@@ -1,7 +1,8 @@
 import { configPath, initializeConfigFile } from "./utils";
 import open from "open";
-import { closeMainWindow } from "@raycast/api";
+import { Application, getPreferenceValues, closeMainWindow } from "@raycast/api";
 
 initializeConfigFile();
-open(configPath, { app: { name: "/Applications/Visual Studio Code.app" } });
+const prefs: { editor: Application } = getPreferenceValues();
+open(configPath, { app: { name: prefs.editor.name } });
 closeMainWindow();
