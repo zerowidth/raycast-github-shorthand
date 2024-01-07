@@ -1,6 +1,18 @@
 import { useContext, useEffect, useState } from "react";
 import { ConfigContext, loadConfig, getGraphqlWithAuth } from "./utils";
-import { Image, Icon, Color, ActionPanel, Action, List, Keyboard, launchCommand, LaunchType } from "@raycast/api";
+import {
+  Image,
+  Icon,
+  Color,
+  ActionPanel,
+  Action,
+  List,
+  Keyboard,
+  launchCommand,
+  LaunchType,
+  ToastStyle,
+  showToast,
+} from "@raycast/api";
 
 const ISSUE_COUNT = 50;
 
@@ -151,6 +163,35 @@ function iconForIssue(issue: IssueOrPr): Image {
   }
 }
 
+const ISSUE_QUERY = `query ($searchText: String!) {
+  search(query: $searchText, type: ISSUE, first: ${ISSUE_COUNT}) {
+    nodes {
+      ... on Issue {
+        number
+        title
+        url
+        state
+        stateReason
+        __typename
+        repository {
+          nameWithOwner
+        }
+      }
+      ... on PullRequest {
+        number
+        title
+        url
+        isDraft
+        state
+        __typename
+        repository {
+          nameWithOwner
+        }
+      }
+    }
+  }
+}`;
+
 function IssueSearch({ scope, description }: { scope: string; description: string }) {
   const graphqlWithAuth = getGraphqlWithAuth();
   const config = useContext(ConfigContext);
@@ -167,44 +208,19 @@ function IssueSearch({ scope, description }: { scope: string; description: strin
         setIsLoading(false);
         return;
       }
-      const result = await graphqlWithAuth<{
-        search: { nodes: IssueOrPr[] };
-      }>(
-        `query ($searchText: String!) {
-          search(query: $searchText, type: ISSUE, first: ${ISSUE_COUNT}) {
-            nodes {
-              ... on Issue {
-                number
-                title
-                url
-                state
-                stateReason
-                __typename
-                repository {
-                  nameWithOwner
-                }
-              }
-              ... on PullRequest {
-                number
-                title
-                url
-                isDraft
-                state
-                __typename
-                repository {
-                  nameWithOwner
-                }
-              }
-            }
-          }
-        }`,
-        {
+      try {
+        const result = await graphqlWithAuth<{
+          search: { nodes: IssueOrPr[] };
+        }>(ISSUE_QUERY, {
           searchText: `${scope} ${searchText}`,
-        },
-      );
-      setCache((prevCache) => ({ ...prevCache, [searchText]: result.search.nodes }));
-      setIssues(result.search.nodes);
-      setIsLoading(false);
+        });
+        setCache((prevCache) => ({ ...prevCache, [searchText]: result.search.nodes }));
+        setIssues(result.search.nodes);
+      } catch (error) {
+        showToast(ToastStyle.Failure, "Failed to search issues", error as string);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchIssues();
   }, [searchText]);
@@ -215,9 +231,24 @@ function IssueSearch({ scope, description }: { scope: string; description: strin
       onSearchTextChange={setSearchText}
       throttle={true}
       isLoading={isLoading}
-      searchBarPlaceholder={`Search issues ${description}`}
-      navigationTitle={`Search issues ${description}`}
+      searchBarPlaceholder={`Search issues in ${description}`}
+      navigationTitle={`Search issues in ${description}`}
     >
+      {issues.length == 0 && searchText.length == 0 && (
+        <List.EmptyView
+          title="No issues found"
+          description={`If you're not seeing issues listed here with an empty search query,\nmake sure the API token you're using has 'repo' scope and has\nSSO authorization (if applicable) for ${description}.`}
+          icon={Icon.QuestionMark}
+          actions={
+            <ActionPanel>
+              <Action.OpenInBrowser
+                title="View Search on GitHub"
+                url={`https://github.com/issues?q=${encodeURIComponent(scope)}`}
+              />
+            </ActionPanel>
+          }
+        />
+      )}
       {issues.map((issue) => (
         <Issue key={issueReference(issue)} issue={issue} />
       ))}
@@ -247,7 +278,7 @@ function User({ user, shorthand, org }: { user: string; shorthand?: string; org?
             icon={Icon.MagnifyingGlass}
             target={
               <ConfigContext.Provider value={useContext(ConfigContext)}>
-                <IssueSearch scope={org ? `org:${user}` : `user:${user}`} description={`in ${user}/`} />
+                <IssueSearch scope={org ? `org:${user}` : `user:${user}`} description={`${user}/`} />
               </ConfigContext.Provider>
             }
             shortcut={{ modifiers: ["cmd"], key: "i" }}
@@ -273,7 +304,7 @@ function Repo({ repo, shorthand }: { repo: string; shorthand?: string }) {
             icon={Icon.MagnifyingGlass}
             target={
               <ConfigContext.Provider value={useContext(ConfigContext)}>
-                <IssueSearch scope={`repo:${repo}`} description={`in ${repo}`} />
+                <IssueSearch scope={`repo:${repo}`} description={`${repo}`} />
               </ConfigContext.Provider>
             }
           />
@@ -322,7 +353,7 @@ function Multi({ shorthand, name, repos }: { shorthand: string; name: string; re
             icon={Icon.MagnifyingGlass}
             target={
               <ConfigContext.Provider value={useContext(ConfigContext)}>
-                <IssueSearch scope={`repo:${repos.join(" repo:")}`} description={`in ${name}`} />
+                <IssueSearch scope={`repo:${repos.join(" repo:")}`} description={`${name}`} />
               </ConfigContext.Provider>
             }
           />
