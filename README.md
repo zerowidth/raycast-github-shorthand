@@ -11,7 +11,7 @@ repos:
   mm: "my-company/monolith"
 ```
 
-When you run the "GitHub Shorthand Issue Search" command, you can type `mm`, hit enter, and immediately see the issues and PRs for that repo. This search starts with a configurable default scope, and can be edited in the raycast window to refine the search results.
+When you run the `GitHub Shorthand Issue Search` command, you can type `mm`, hit enter, and immediately see the issues and PRs for that repo. This search starts with a configurable default scope which can be edited in the raycast window to refine the search results.
 
 The default config file has examples for each feature, including users, orgs, repos, and multi-repo groups.
 
@@ -31,7 +31,7 @@ This is inspired by, but not a direct translation of, a set of Alfred tools for 
 
 ## Configuration
 
-Run the "Configure GitHub Shorthand" action to open the config YAML file. Edit as needed.
+Run the `Configure GitHub Shorthand` action to open the config YAML file. Edit as needed.
 
 ## Why aren't there any search results?
 
