@@ -40,7 +40,7 @@ repos:
 #      - my-org/team-project-2
 `;
 
-export const configPath = path.join(environment.supportPath, "gh-shorthand.yaml");
+export const configPath = path.join(environment.supportPath, "shorthand.yaml");
 
 export type Config = {
   defaultScope: string;
