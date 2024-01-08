@@ -22,8 +22,8 @@ This is inspired by, but not a direct translation of, a set of Alfred tools for 
 ## Installation
 
 - Clone this repo
-- In this repo, `cd github-shorthand && npm install && npm run build`
-- Use the "Import Extension" command in Raycast to import the `github-shorthand` folder.
+- `npm install && npm run build`
+- Use the `Import Extension` command in Raycast to import this folder.
 - Configure the extension with a GitHub personal access token. This token must:
   - have `repo` scope
   - have SSO authorization (if applicable) for private repos

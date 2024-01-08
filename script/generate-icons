@@ -33,7 +33,7 @@ function convertSVGs() {
   const originalSize = 16;
   const targetSize = 512;
   const density = (defaultDPI * targetSize) / originalSize;
-  const outputPath = path.join(__dirname, "..", "github-shorthand", "assets");
+  const outputPath = path.join(__dirname, "..", "assets");
   conversions = toConvert.map(async (name) => {
     const pngPath = path.join(outputPath, `${name}.png`);
     const svgData = octicons[name].toSVG();
