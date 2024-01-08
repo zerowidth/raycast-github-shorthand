@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { ConfigContext, loadConfig, getGraphqlWithAuth } from "./utils";
+import { initializeConfigFile, ConfigContext, loadConfig, getGraphqlWithAuth } from "./utils";
 import {
   Image,
   Icon,
@@ -17,6 +17,7 @@ import {
 const ISSUE_COUNT = 50;
 
 export default function Main() {
+  initializeConfigFile();
   return (
     <ConfigContext.Provider value={loadConfig()}>
       <CombinedList />

@@ -14,18 +14,18 @@ const defaultConfigFile = `---
 defaultScope: "is:open"
 
 # This is a map of user shorthand to their full GitHub login:
-users:
-  # "z": "zerowidth"
+# users:
+#   "z": "zerowidth"
 
 # Same thing for organizations. There's no functional difference from users, this just
 # changes the icon shown in the list.
-orgs:
-  # "r": "rails"
+# orgs:
+#   "r": "rails"
 
 # This is map of repository shorthands to their full path on GitHub:
-repos:
-  # "rs": "raycast/script-commands"
-  # "df": "zerowidth/dotfiles"
+# repos:
+#   "rs": "raycast/script-commands"
+#   "df": "zerowidth/dotfiles"
 
 # For multi-repo search, you can configure sets of repos here.
 #
