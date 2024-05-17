@@ -80,7 +80,6 @@ export function isEmpty(config: Config): boolean {
   );
 }
 
-
 export type Shorthand = { [shorthand: string]: string };
 
 export function loadConfig(): Config {

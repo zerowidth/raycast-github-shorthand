@@ -36,7 +36,8 @@
       "type": "appPicker",
       "title": "Editor",
       "description": "The editor app to use when opening the configuration file",
-      "default": "/Applications/Visual Studio Code.app"
+      "default": "/Applications/Visual Studio Code.app",
+      "required": false
     }
   ],
   "dependencies": {
