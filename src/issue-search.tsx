@@ -251,7 +251,7 @@ function IssueSearch({ scope, description }: { scope: string; description: strin
         />
       )}
       {issues.map((issue) => (
-        <Issue key={issueReference(issue)} issue={issue} />
+        <Issue key={issueReference(issue)} issue={issue} search={`${scope} ${searchText}`} />
       ))}
     </List>
   );
@@ -364,7 +364,7 @@ function Multi({ shorthand, name, repos }: { shorthand: string; name: string; re
   );
 }
 
-function Issue({ issue }: { issue: IssueOrPr }) {
+function Issue({ issue, search }: { issue: IssueOrPr, search: string }) {
   return (
     <List.Item
       title={issue.title}
@@ -374,6 +374,11 @@ function Issue({ issue }: { issue: IssueOrPr }) {
         <ActionPanel>
           <Action.OpenInBrowser title="Open on GitHub" url={issue.url} />
           <Action.CopyToClipboard title="Copy URL" content={issue.url} shortcut={Keyboard.Shortcut.Common.Copy} />
+          <Action.OpenInBrowser
+            title="View Search on GitHub"
+            url={`https://github.com/issues?q=${encodeURIComponent(search)}`}
+            shortcut={{ modifiers: ["cmd"], key: "o" }}
+          />
         </ActionPanel>
       }
     />
