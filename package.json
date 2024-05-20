@@ -45,7 +45,7 @@
     "@raycast/api": "^1.74.1",
     "js-yaml": "^4.1.0",
     "node-fetch": "^3.3.2",
-    "open": "^10.1.0"
+    "open": "8.4.2"
   },
   "devDependencies": {
     "@raycast/eslint-config": "^1.0.8",
