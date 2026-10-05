@@ -2,9 +2,8 @@ import { environment, getPreferenceValues } from "@raycast/api";
 import path from "path";
 import fs from "fs";
 import { graphql } from "@octokit/graphql";
-import fetch from "node-fetch";
 import { showToast, Toast } from "@raycast/api";
-import yaml from "js-yaml";
+import { load as loadYaml } from "js-yaml";
 import { createContext } from "react";
 
 const defaultConfigFile = `---
@@ -95,7 +94,7 @@ export function loadConfig(): Config {
 
   if (data) {
     try {
-      const loaded = yaml.load(data) as Partial<Config>;
+      const loaded = loadYaml(data) as Partial<Config>;
       const config: Config = {
         ...defaultConfig,
         ...loaded,
@@ -127,9 +126,6 @@ export function getGraphqlWithAuth() {
   }
   const authConfig = getPreferenceValues() as AuthConfig;
   return graphql.defaults({
-    request: {
-      fetch: fetch,
-    },
     headers: {
       authorization: `token ${authConfig.githubApiKey}`,
     },
