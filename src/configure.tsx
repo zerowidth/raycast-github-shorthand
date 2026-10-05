@@ -1,8 +1,9 @@
 import { configPath, initializeConfigFile } from "./utils";
-import open from "open";
-import { Application, getPreferenceValues, closeMainWindow } from "@raycast/api";
+import { Application, getPreferenceValues, closeMainWindow, open } from "@raycast/api";
 
-initializeConfigFile();
-const prefs: { editor: Application } = getPreferenceValues();
-open(configPath, { app: { name: prefs.editor.name } });
-closeMainWindow();
+export default async function Command() {
+  initializeConfigFile();
+  const prefs: { editor: Application } = getPreferenceValues();
+  await open(configPath, prefs.editor);
+  await closeMainWindow();
+}

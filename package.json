@@ -47,8 +47,7 @@
     "@octokit/graphql": "^8.1.1",
     "@raycast/api": "^2.6.2",
     "js-yaml": "^4.1.0",
-    "node-fetch": "^3.3.2",
-    "open": "8.4.2"
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "@primer/octicons": "^19.9.0",
