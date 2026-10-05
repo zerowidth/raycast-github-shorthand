@@ -257,6 +257,123 @@ function IssueSearch({ scope, description }: { scope: string; description: strin
   );
 }
 
+interface Branch {
+  name: string;
+  target: {
+    committedDate: string;
+    author: { name: string };
+  };
+}
+
+const BRANCH_PAGE_LIMIT = 10;
+
+// GitHub can't sort branches by commit date, so fetch them all and sort locally.
+const BRANCH_QUERY = `query ($owner: String!, $name: String!, $cursor: String) {
+  repository(owner: $owner, name: $name) {
+    defaultBranchRef {
+      name
+    }
+    refs(refPrefix: "refs/heads/", first: 100, after: $cursor) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        name
+        target {
+          ... on Commit {
+            committedDate
+            author {
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+}`;
+
+function BranchList({ repo }: { repo: string }) {
+  const [branches, setBranches] = useState([] as Branch[]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBranches = async () => {
+      const graphqlWithAuth = getGraphqlWithAuth();
+      const [owner, name] = repo.split("/");
+      try {
+        const all: Branch[] = [];
+        let defaultBranch: string | undefined;
+        let cursor: string | null = null;
+        for (let page = 0; page < BRANCH_PAGE_LIMIT; page++) {
+          const result: {
+            repository: {
+              defaultBranchRef: { name: string } | null;
+              refs: { pageInfo: { hasNextPage: boolean; endCursor: string }; nodes: Branch[] };
+            };
+          } = await graphqlWithAuth(BRANCH_QUERY, { owner, name, cursor });
+          defaultBranch = result.repository.defaultBranchRef?.name;
+          all.push(...result.repository.refs.nodes);
+          if (!result.repository.refs.pageInfo.hasNextPage) break;
+          cursor = result.repository.refs.pageInfo.endCursor;
+        }
+        setBranches(
+          all
+            .filter((branch) => branch.name != defaultBranch)
+            .sort((a, b) => b.target.committedDate.localeCompare(a.target.committedDate)),
+        );
+      } catch (error) {
+        showToast({ style: Toast.Style.Failure, title: "Failed to list branches", message: (error as Error).message });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchBranches();
+  }, [repo]);
+
+  return (
+    <List
+      isLoading={isLoading}
+      searchBarPlaceholder={`Filter branches in ${repo}`}
+      navigationTitle={`Branches in ${repo}`}
+    >
+      {branches.map((branch) => (
+        <BranchItem key={branch.name} repo={repo} branch={branch} />
+      ))}
+    </List>
+  );
+}
+
+function BranchItem({ repo, branch }: { repo: string; branch: Branch }) {
+  const path = branch.name.split("/").map(encodeURIComponent).join("/");
+  return (
+    <List.Item
+      title={branch.name}
+      icon={{ source: "git-branch.png", tintColor: Color.PrimaryText }}
+      accessories={[{ text: branch.target.author.name }, { date: new Date(branch.target.committedDate) }]}
+      actions={
+        <ActionPanel>
+          <Action.OpenInBrowser
+            title="Compare and Open PR on GitHub"
+            url={`https://github.com/${repo}/compare/${path}?expand=1`}
+            icon={{ source: "git-pull-request.png", tintColor: Color.PrimaryText }}
+          />
+          <Action.OpenInBrowser
+            title="Open Branch on GitHub"
+            url={`https://github.com/${repo}/tree/${path}`}
+            shortcut={Keyboard.Shortcut.Common.Open}
+          />
+          <Action.CopyToClipboard
+            title="Copy Branch Name"
+            content={branch.name}
+            shortcut={Keyboard.Shortcut.Common.CopyName}
+          />
+        </ActionPanel>
+      }
+    />
+  );
+}
+
 function User({ user, shorthand, org }: { user: string; shorthand?: string; org?: boolean }) {
   return (
     <List.Item
@@ -308,6 +425,12 @@ function Repo({ repo, shorthand }: { repo: string; shorthand?: string }) {
                 <IssueSearch scope={`repo:${repo}`} description={`${repo}`} />
               </ConfigContext.Provider>
             }
+          />
+          <Action.Push
+            title="List Branches"
+            icon={{ source: "git-branch.png", tintColor: Color.PrimaryText }}
+            target={<BranchList repo={repo} />}
+            shortcut={{ modifiers: ["cmd"], key: "b" }}
           />
           <Action.OpenInBrowser
             title="Open Repo on GitHub"

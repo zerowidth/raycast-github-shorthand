@@ -19,6 +19,7 @@ const toConvert = [
   "issue-draft",
   "skip",
   "repo-clone",
+  "git-branch",
 ];
 
 convertSVGs()
