@@ -10,7 +10,7 @@ import {
   Keyboard,
   launchCommand,
   LaunchType,
-  ToastStyle,
+  Toast,
   showToast,
 } from "@raycast/api";
 
@@ -50,7 +50,7 @@ function CombinedList() {
                 onAction={async () => {
                   await launchCommand({ name: "configure", type: LaunchType.UserInitiated });
                 }}
-                shortcut={{ modifiers: ["cmd"], key: "e" }}
+                shortcut={Keyboard.Shortcut.Common.Edit}
               />
             </ActionPanel>
           }
@@ -104,7 +104,7 @@ function RepoList({ owner }: { owner: string }) {
                 onAction={async () => {
                   await launchCommand({ name: "configure", type: LaunchType.UserInitiated });
                 }}
-                shortcut={{ modifiers: ["cmd"], key: "e" }}
+                shortcut={Keyboard.Shortcut.Common.Edit}
               />
             </ActionPanel>
           }
@@ -218,7 +218,7 @@ function IssueSearch({ scope, description }: { scope: string; description: strin
         setCache((prevCache) => ({ ...prevCache, [searchText]: result.search.nodes }));
         setIssues(result.search.nodes);
       } catch (error) {
-        showToast(ToastStyle.Failure, "Failed to search issues", error as string);
+        showToast({ style: Toast.Style.Failure, title: "Failed to search issues", message: (error as Error).message });
       } finally {
         setIsLoading(false);
       }
@@ -377,7 +377,7 @@ function Issue({ issue, search }: { issue: IssueOrPr; search: string }) {
           <Action.OpenInBrowser
             title="View Search on GitHub"
             url={`https://github.com/issues?q=${encodeURIComponent(search)}`}
-            shortcut={{ modifiers: ["cmd"], key: "o" }}
+            shortcut={Keyboard.Shortcut.Common.Open}
           />
         </ActionPanel>
       }
