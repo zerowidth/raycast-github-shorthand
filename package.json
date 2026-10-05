@@ -5,7 +5,10 @@
   "description": "Quick access and search for a configured set of repositories using shorthand references for users and repositories.",
   "icon": "command-icon.png",
   "author": "zerowidth",
-  "categories": ["Productivity", "Developer Tools"],
+  "categories": [
+    "Productivity",
+    "Developer Tools"
+  ],
   "license": "MIT",
   "commands": [
     {
@@ -42,22 +45,22 @@
   ],
   "dependencies": {
     "@octokit/graphql": "^8.1.1",
-    "@raycast/api": "^1.74.1",
+    "@raycast/api": "^2.6.2",
     "js-yaml": "^4.1.0",
     "node-fetch": "^3.3.2",
     "open": "8.4.2"
   },
   "devDependencies": {
-    "@raycast/eslint-config": "^1.0.8",
-    "@types/js-yaml": "^4.0.9",
-    "@types/node": "20.12.12",
-    "@types/react": "18.3.2",
-    "eslint": "^9.2.0",
-    "prettier": "^3.2.5",
-    "typescript": "^5.4.5",
     "@primer/octicons": "^19.9.0",
+    "@raycast/eslint-config": "^2.2.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.19.17",
+    "@types/react": "^19.0.10",
     "cheerio": "^1.0.0-rc.12",
-    "sharp": "^0.33.4"
+    "eslint": "^10.12.0",
+    "prettier": "^3.9.9",
+    "sharp": "^0.33.4",
+    "typescript": "^6.0.3"
   },
   "scripts": {
     "build": "ray build -e dist",
@@ -65,5 +68,8 @@
     "fix-lint": "ray lint --fix",
     "lint": "ray lint",
     "publish": "npx @raycast/api@latest publish"
-  }
+  },
+  "platforms": [
+    "macOS"
+  ]
 }

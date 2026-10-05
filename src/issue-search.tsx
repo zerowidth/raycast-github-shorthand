@@ -364,7 +364,7 @@ function Multi({ shorthand, name, repos }: { shorthand: string; name: string; re
   );
 }
 
-function Issue({ issue, search }: { issue: IssueOrPr, search: string }) {
+function Issue({ issue, search }: { issue: IssueOrPr; search: string }) {
   return (
     <List.Item
       title={issue.title}
